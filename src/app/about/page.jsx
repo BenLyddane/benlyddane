@@ -9,7 +9,8 @@ import {
   LinkedInIcon,
   XIcon,
 } from '@/components/SocialIcons'
-import portraitImage from '@/images/portrait.jpg'
+import BethesdaRow from '@/images/BethesdaRow.png'
+import portfolioCartoon from '@/images/portfoliocartoon.png'
 
 function SocialLink({ className, href, children, icon: Icon }) {
   return (
@@ -38,8 +39,7 @@ function MailIcon(props) {
 
 export const metadata = {
   title: 'About',
-  description:
-    'I’m Ben Lyddane. I live in New York City, where I design the future.',
+  description: 'I’m Ben Lyddane. I live in Chevy Chase, MD where I create.',
 }
 
 export default function About() {
@@ -49,7 +49,7 @@ export default function About() {
         <div className="lg:pl-20">
           <div className="max-w-xs px-2.5 lg:max-w-none">
             <Image
-              src={portraitImage}
+              src={portfolioCartoon}
               alt=""
               sizes="(min-width: 1024px) 32rem, 20rem"
               className="aspect-square rotate-3 rounded-2xl bg-zinc-100 object-cover dark:bg-zinc-800"
@@ -58,57 +58,116 @@ export default function About() {
         </div>
         <div className="lg:order-first lg:row-span-2">
           <h1 className="text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
-            I’m Ben Lyddane. I live in New York City, where I design the future.
+            I’m Ben Lyddane. I live in Chevy Chase, MD where I{' '}
+            <span className="text-cyan-500">create.</span>
           </h1>
           <div className="mt-6 space-y-7 text-base text-zinc-600 dark:text-zinc-400">
+            {' '}
             <p>
-              I’ve loved making things for as long as I can remember, and wrote
-              my first program when I was 6 years old, just two weeks after my
-              mom brought home the brand new Macintosh LC 550 that I taught
-              myself to type on.
-            </p>
+              {' '}
+              From a young age, I&apos;ve been driven by a passion for exploring
+              diverse disciplines. I grew up with CPA parents, Mary Kay and
+              Anthony, who instilled in me a love for learning. I was
+              continuously encouraged to pursue my interests. As a kid, I
+              immersed myself in the world of competitive gaming, traveling
+              across the country to compete in Halo 2 and 3 tournaments.
+              Alongside my gaming pursuits, I honed my skills on the high school
+              golf team, discovering the unique beauty of individual competition
+              and the thrill of personal achievement.{' '}
+            </p>{' '}
             <p>
-              The only thing I loved more than computers as a kid was space.
-              When I was 8, I climbed the 40-foot oak tree at the back of our
-              yard while wearing my older sister’s motorcycle helmet, counted
-              down from three, and jumped — hoping the tree was tall enough that
-              with just a bit of momentum I’d be able to get to orbit.
-            </p>
+              {' '}
+              I studied mechanical engineering at Virginia Tech, where I also
+              joined the Phi Gamma Delta fraternity. This experience not only
+              provided me with a strong foundation in engineering but also
+              taught me the transformative power of social connections and the
+              value of true friendship. I learned that the richness of life lies
+              in the relationships we forge with others, and that the support
+              and camaraderie of our peers can propel us to new heights.{' '}
+            </p>{' '}
             <p>
-              I spent the next few summers indoors working on a rocket design,
-              while I recovered from the multiple surgeries it took to fix my
-              badly broken legs. It took nine iterations, but when I was 15 I
-              sent my dad’s Blackberry into orbit and was able to transmit a
-              photo back down to our family computer from space.
-            </p>
+              {' '}
+              After graduating, I embarked on a journey to align my passions
+              with my career aspirations. Driven by a desire to maximize my
+              potential, I searched for the most lucrative opportunities for
+              mechanical engineers and found myself on a sales track. Through
+              dedication and hard work, I excelled in the Daikin graduate
+              engineer training program, emerging as the valedictorian. This
+              early success set the stage for a remarkable career trajectory, as
+              I consistently achieved top sales performance in each organization
+              I&apos;ve worked with.{' '}
+            </p>{' '}
             <p>
-              Today, I’m the founder of Planetaria, where we’re working on
-              civilian space suits and manned shuttle kits you can assemble at
-              home so that the next generation of kids really <em>can</em> make
-              it to orbit — from the comfort of their own backyards.
-            </p>
+              {' '}
+              Throughout my personal and professional journey, I&apos;ve been
+              blessed with the unwavering support and love of my brilliant and
+              beautiful wife, Natalie. Her background in art provides a unique
+              perspective that complements my own, enriching our lives together.
+              Natalie&apos;s presence serves as a constant reminder of what
+              truly matters, keeping me focused on the things that bring genuine
+              fulfillment and happiness.{' '}
+            </p>{' '}
+            <p>
+              {' '}
+              As an avid traveler and lifelong learner, I find joy in exploring
+              new places and expanding my knowledge across various domains. My
+              love for food, particularly Japanese and Chinese cuisines, adds
+              another dimension to my adventures. However, I&apos;ve come to
+              recognize the importance of focus and prioritization. Inspired by
+              Warren Buffet&apos;s wisdom, I&apos;m committed to streamlining my
+              goals, concentrating my efforts on the pursuits that hold the
+              greatest potential for personal growth and impact.{' '}
+            </p>{' '}
+            <p>
+              {' '}
+              With an insatiable appetite for improvement and an unwavering
+              determination to extract the most out of life, I&apos;m always
+              eager to learn from others. If you have any insights, advice, or
+              experiences that you believe could help me along my journey, I
+              would be immensely grateful if you shared them with me.{' '}
+            </p>{' '}
+            <p>
+              {' '}
+              Today, as the founder of SpecFrog, I harness my diverse
+              experiences and interdisciplinary expertise to create solutions
+              that bridge the gap between cutting-edge technology and the
+              profound needs of legacy businesses. By leveraging my background
+              in mechanical and software engineering, sales, and personal
+              development, I am dedicated to shaping a future where the
+              intersection of diverse disciplines yields valuable outcomes for
+              companies and people.{' '}
+            </p>{' '}
           </div>
         </div>
         <div className="lg:pl-20">
           <ul role="list">
-            <SocialLink href="#" icon={XIcon}>
-              Follow on X
+            <SocialLink
+              href="https://github.com/BenLyddane"
+              icon={GitHubIcon}
+              className="mt-4"
+            >
+              GitHub
             </SocialLink>
-            <SocialLink href="#" icon={InstagramIcon} className="mt-4">
-              Follow on Instagram
+            <SocialLink
+              href="https://www.linkedin.com/in/benlyddane/"
+              icon={LinkedInIcon}
+              className="mt-4"
+            >
+              LinkedIn
             </SocialLink>
-            <SocialLink href="#" icon={GitHubIcon} className="mt-4">
-              Follow on GitHub
-            </SocialLink>
-            <SocialLink href="#" icon={LinkedInIcon} className="mt-4">
-              Follow on LinkedIn
+            <SocialLink
+              href="mailto:Ben@specfrog.com"
+              icon={MailIcon}
+              className="mt-8 border-t border-zinc-100 pt-8 dark:border-zinc-700/40"
+            >
+              Ben@SpecFrog.com (work)
             </SocialLink>
             <SocialLink
               href="mailto:Ben@planetaria.tech"
               icon={MailIcon}
-              className="mt-8 border-t border-zinc-100 pt-8 dark:border-zinc-700/40"
+              className="mt-8 border-zinc-100 dark:border-zinc-700/40"
             >
-              Ben@planetaria.tech
+              BenL1291@gmail.com (personal)
             </SocialLink>
           </ul>
         </div>

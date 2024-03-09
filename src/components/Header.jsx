@@ -7,9 +7,9 @@ import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { Popover, Transition } from '@headlessui/react'
 import clsx from 'clsx'
-
 import { Container } from '@/components/Container'
 import avatarImage from '@/images/avatar.jpg'
+import { FaChevronDown, FaChevronRight } from 'react-icons/fa'
 
 function CloseIcon(props) {
   return (
@@ -72,16 +72,6 @@ function MoonIcon(props) {
   )
 }
 
-function MobileNavItem({ href, children }) {
-  return (
-    <li>
-      <Popover.Button as={Link} href={href} className="block py-2">
-        {children}
-      </Popover.Button>
-    </li>
-  )
-}
-
 function MobileNavigation(props) {
   return (
     <Popover {...props}>
@@ -124,15 +114,9 @@ function MobileNavigation(props) {
             </div>
             <nav className="mt-6">
               <ul className="-my-2 divide-y divide-zinc-100 text-base text-zinc-800 dark:divide-zinc-100/5 dark:text-zinc-300">
-                <MobileNavItem href="/about">About</MobileNavItem>
-                <MobileNavItem href="/articles">SpecFrog</MobileNavItem>
-                <MobileNavItem href="https://www.11minuteconstruction.com">
-                  11 Minute Construction
-                </MobileNavItem>
-                <MobileNavItem href="https://thursdinner.com">
-                  Thursdinner
-                </MobileNavItem>
-                <MobileNavItem href="/articles">Articles</MobileNavItem>
+                {navItems.map((item) => (
+                  <NavItem key={item.href} item={item} />
+                ))}
               </ul>
             </nav>
           </Popover.Panel>
@@ -141,39 +125,191 @@ function MobileNavigation(props) {
     </Popover>
   )
 }
+const navItems = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/articles', label: 'Articles' },
+  {
+    href: '/interests',
+    label: 'Interests',
+    subItems: [
+      { href: '/interests/golf', label: 'Golf' },
+      { href: '/interests/weight-lifting', label: 'Weight Lifting' },
+      {
+        href: '/interests/gaming',
+        label: 'Gaming',
+        subItems: [
+          {
+            href: '/interests/gaming/competitive-shooters',
+            label: 'Competitive Shooters',
+          },
+          {
+            href: '/interests/gaming/magic-the-gathering',
+            label: 'Magic: The Gathering',
+          },
+          { href: '/interests/gaming/chess', label: 'Chess' },
+        ],
+      },
+      {
+        href: '/interests/reading',
+        label: 'Reading',
+        subItems: [
+          { href: '/interests/reading/fiction', label: 'Fiction' },
+          {
+            href: '/interests/reading/non-fiction',
+            label: 'Non-Fiction',
+            subItems: [
+              {
+                href: '/interests/reading/non-fiction/business',
+                label: 'Business',
+              },
+              {
+                href: '/interests/reading/non-fiction/psychology',
+                label: 'Psychology',
+              },
+              {
+                href: '/interests/reading/non-fiction/philosophy',
+                label: 'Philosophy',
+              },
+              {
+                href: '/interests/reading/non-fiction/self-improvement',
+                label: 'Self-Improvement',
+              },
+              {
+                href: '/interests/reading/non-fiction/sales',
+                label: 'Sales',
+              },
+              {
+                href: '/interests/reading/non-fiction/biographies',
+                label: 'Biographies',
+              },
+            ],
+          },
+        ],
+      },
+      { href: '/interests/food', label: 'Food' },
+      {
+        href: '/interests/music-production',
+        label: 'Music Production',
+        subItems: [
+          { href: '/interests/music-production/guitar', label: 'Guitar' },
+          {
+            href: '/interests/music-production/electronic-music',
+            label: 'Electronic Music',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    href: '/work',
+    label: 'Work',
+    subItems: [
+      {
+        href: '/work/mechanical-engineering',
+        label: 'Mechanical Engineering',
+      },
+      {
+        href: '/work/software-engineering',
+        label: 'Software Engineering',
+      },
+      { href: '/work/entrepreneurship', label: 'Entrepreneurship' },
+      { href: '/work/sales', label: 'Sales' },
+    ],
+  },
+  {
+    href: '/podcasts',
+    label: 'Podcasts',
+    subItems: [
+      { href: '/podcasts/thursdinner', label: 'Thursdinner' },
+      {
+        href: '/podcasts/11-minute-construction',
+        label: '11 Minute Construction Podcast',
+      },
+    ],
+  },
+  { href: '/travel', label: 'Travel' },
+  { href: '/contact', label: 'Contact' },
+]
+function NavItem({ item, level = 0 }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const timeoutRef = useRef(null)
+  const isActive = usePathname() === item.href
 
-function NavItem({ href, children }) {
-  let isActive = usePathname() === href
+  const handleMouseEnter = () => {
+    clearTimeout(timeoutRef.current)
+    setIsOpen(true)
+  }
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false)
+    }, 200)
+  }
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timeoutRef.current)
+    }
+  }, [])
 
   return (
-    <li>
+    <li
+      className="relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <Link
-        href={href}
+        href={item.href}
         className={clsx(
-          'relative block px-3 py-2 transition',
+          'relative flex items-center px-3 py-2 transition',
           isActive
             ? 'text-cyan-500 dark:text-cyan-400'
             : 'hover:text-cyan-500 dark:hover:text-cyan-400',
+          level === 0 && 'block py-2', // Add this line for mobile navigation styling
         )}
       >
-        {children}
+        {item.label}
+        {item.subItems && level === 0 && (
+          <FaChevronDown className="ml-1 h-4 w-4" />
+        )}
+        {item.subItems && level > 0 && (
+          <FaChevronRight className="ml-1 h-4 w-4" />
+        )}
         {isActive && (
           <span className="absolute inset-x-1 -bottom-px h-px bg-gradient-to-r from-cyan-500/0 via-cyan-500/40 to-cyan-500/0 dark:from-cyan-400/0 dark:via-cyan-400/40 dark:to-cyan-400/0" />
         )}
       </Link>
+      {item.subItems && (
+        <ul
+          className={clsx(
+            'absolute z-10 w-48 rounded-lg bg-white p-2 shadow-lg dark:bg-zinc-800',
+            level === 0 && 'left-0 top-full',
+            level > 0 && 'left-full top-0 ml-2',
+            isOpen ? 'block' : 'hidden',
+          )}
+        >
+          {item.subItems.map((subItem) => (
+            <li
+              key={subItem.href}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <NavItem item={subItem} level={level + 1} />
+            </li>
+          ))}
+        </ul>
+      )}
     </li>
   )
 }
-
 function DesktopNavigation(props) {
   return (
     <nav {...props}>
-      <ul className="flex rounded-full bg-white/90 px-3 text-sm font-medium text-zinc-800 shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 backdrop-blur dark:bg-zinc-800/90 dark:text-zinc-200 dark:ring-white/10">
-        <NavItem href="/about">About</NavItem>
-        <NavItem href="/articles">SpecFrog</NavItem>
-        <NavItem href="/projects">Hobbies</NavItem>
-        <NavItem href="https://www.11minuteconstruction.com">Podcasts</NavItem>
-        <NavItem href="https://www.Thursdinner.com">Thursdinner</NavItem>
+      <ul className="flex items-center justify-center rounded-full bg-white/90 px-3 text-sm font-medium text-zinc-800 shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 backdrop-blur dark:bg-zinc-800/90 dark:text-zinc-200 dark:ring-white/10">
+        {navItems.map((item) => (
+          <NavItem key={item.href} item={item} />
+        ))}
       </ul>
     </nav>
   )

@@ -10,15 +10,18 @@ import {
   LinkedInIcon,
   XIcon,
 } from '@/components/SocialIcons'
-import logoAirbnb from '@/images/logos/airbnb.svg'
-import logoFacebook from '@/images/logos/facebook.svg'
-import logoPlanetaria from '@/images/logos/planetaria.svg'
-import logoStarbucks from '@/images/logos/starbucks.svg'
-import image1 from '@/images/photos/image-1.jpg'
-import image2 from '@/images/photos/image-2.jpg'
-import image3 from '@/images/photos/image-3.jpg'
-import image4 from '@/images/photos/image-4.jpg'
-import image5 from '@/images/photos/image-5.jpg'
+import logoKlima from '@/images/logos/klima.jpg'
+import NIST from '@/images/logos/NIST.png'
+import logoCritical from '@/images/logos/cs.jpg'
+import logoDaikin from '@/images/logos/Daikin.png'
+import logoFullstack from '@/images/logos/fullstackLogo.jpg'
+import logoSpecFrog from '@/images/logos/FrogLogoPic.png'
+import vtlogo from '@/images/logos/vtlogo.png'
+import image1 from '@/images/photos/image-1.png'
+import image2 from '@/images/photos/image-2.png'
+import image3 from '@/images/photos/image-3.png'
+import image4 from '@/images/photos/image-4.png'
+import image5 from '@/images/photos/image-5.png'
 import { getAllArticles } from '@/lib/articles'
 import { formatDate } from '@/lib/formatDate'
 import Newsletter from '@/components/newsletter'
@@ -121,33 +124,61 @@ function Role({ role }) {
 function Resume() {
   let resume = [
     {
-      company: 'Planetaria',
+      company: 'SpecFrog',
       title: 'CEO',
-      logo: logoPlanetaria,
-      start: '2019',
+      logo: logoSpecFrog,
+      start: '2023',
       end: {
         label: 'Present',
         dateTime: new Date().getFullYear().toString(),
       },
     },
     {
-      company: 'Airbnb',
-      title: 'Product Designer',
-      logo: logoAirbnb,
-      start: '2014',
-      end: '2019',
+      company: 'Fullstack Academy',
+      title: 'Student - 104.5%',
+      logo: logoFullstack,
+      start: '2023',
+      end: '2023',
     },
     {
-      company: 'Facebook',
-      title: 'iOS Software Engineer',
-      logo: logoFacebook,
-      start: '2011',
+      company: 'Klima NJ',
+      title: 'Sales Engineer',
+      logo: logoKlima,
+      start: '2021',
+      end: '2023',
+    },
+    {
+      company: 'Critical Systems',
+      title: 'Engineer Design Executive',
+      logo: logoCritical,
+      start: '2018',
+      end: '2021',
+    },
+    {
+      company: 'Daikin',
+      title: 'Field Sales Engineer - GET Valedictorian',
+      logo: logoDaikin,
+      start: '2016',
+      end: '2018',
+    },
+    {
+      company: 'Critical Systems',
+      title: 'Applications Engineer',
+      logo: logoCritical,
+      start: '2014',
+      end: '2016',
+    },
+    {
+      company: 'Virginia Tech',
+      title: 'Mechanical Engineering',
+      logo: vtlogo,
+      start: '2010',
       end: '2014',
     },
     {
-      company: 'Starbucks',
-      title: 'Shift Supervisor',
-      logo: logoStarbucks,
+      company: 'NIST',
+      title: 'Intern',
+      logo: NIST,
       start: '2008',
       end: '2011',
     },
@@ -157,17 +188,13 @@ function Resume() {
     <div className="rounded-2xl border border-zinc-100 p-6 dark:border-zinc-700/40">
       <h2 className="flex text-sm font-semibold text-zinc-900 dark:text-zinc-100">
         <BriefcaseIcon className="h-6 w-6 flex-none" />
-        <span className="ml-3">Work</span>
+        <span className="ml-3">Work and Education</span>
       </h2>
       <ol className="mt-6 space-y-4">
         {resume.map((role, roleIndex) => (
           <Role key={roleIndex} role={role} />
         ))}
       </ol>
-      <Button href="#" variant="secondary" className="group mt-6 w-full">
-        Download CV
-        <ArrowDownIcon className="h-4 w-4 stroke-zinc-400 transition group-active:stroke-zinc-600 dark:group-hover:stroke-zinc-50 dark:group-active:stroke-zinc-50" />
-      </Button>
     </div>
   )
 }
