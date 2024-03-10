@@ -28,7 +28,7 @@ const InterestCard = ({ href, label, srcImage }) => (
           src={srcImage}
           height="1000"
           width="1000"
-          className="h-80 w-full rounded-xl object-cover group-hover/card:shadow-xl"
+          className="h-100 w-full rounded-xl object-cover group-hover/card:shadow-xl"
           alt={`${label} thumbnail`}
         />
       </CardItem>
@@ -51,16 +51,15 @@ const InterestCard = ({ href, label, srcImage }) => (
 export default function Interests() {
   const interests = [
     {
-        href: 'https://11minuteconstruction.com',
-        label: '11 Minute Construction',
-        srcImage: ElevinMin,
-      },
+      href: 'https://11minuteconstruction.com',
+      label: '11 Minute Construction',
+      srcImage: ElevinMin,
+    },
     {
       href: 'https://thursdinner.com',
       label: 'Thursdinner',
       srcImage: Thursdinner,
     },
-  
   ]
 
   return (
