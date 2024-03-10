@@ -20,12 +20,6 @@ export function Footer() {
         <div className="border-t border-zinc-100 pb-16 pt-10 dark:border-zinc-700/40">
           <ContainerInner>
             <div className="flex flex-col items-center gap-16 sm:flex-row sm:justify-between">
-              <div className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                <NavLink href="/about">About</NavLink>
-                <NavLink href="/projects">Projects</NavLink>
-                <NavLink href="/speaking">Speaking</NavLink>
-                <NavLink href="/uses">Uses</NavLink>
-              </div>
               <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between sm:gap-8">
                 <div className="text-center text-sm text-zinc-400 sm:text-right dark:text-zinc-500">
                   <p>BenL1291@gmail.com</p>

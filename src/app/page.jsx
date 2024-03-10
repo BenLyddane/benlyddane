@@ -63,7 +63,7 @@ function ArrowDownIcon(props) {
 
 function Article({ article }) {
   return (
-    <Card as="article">
+    <Card as="article" className="max-w-2xl">
       <Card.Title href={`/articles/${article.slug}`}>
         {article.title}
       </Card.Title>
@@ -71,6 +71,17 @@ function Article({ article }) {
         {formatDate(article.date)}
       </Card.Eyebrow>
       <Card.Description>{article.description}</Card.Description>
+      <div className="mt-4 flex flex-wrap">
+        {article.tags.map((tag) => (
+          <Link
+            key={tag}
+            href={`/interests/${tag.toLowerCase()}`}
+            className="mr-2 text-sm text-cyan-500 hover:text-cyan-600"
+          >
+            #{tag}
+          </Link>
+        ))}
+      </div>
       <Card.Cta>Read article</Card.Cta>
     </Card>
   )
@@ -234,7 +245,8 @@ export default async function Home() {
       <Container className="mt-9">
         <div className="max-w-2xl">
           <h1 className="text-2xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
-            Founder, Engineer, Creator, and Lifelong Learner
+            Founder, Engineer, Creator, and Lifelong{' '}
+            <span className="text-cyan-500">Learner</span>
           </h1>
           <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
             I&apos;m Ben Lyddane, a mechanical and software engineer, and the

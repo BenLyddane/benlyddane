@@ -1,12 +1,11 @@
 'use client'
-
 import { useContext } from 'react'
 import { useRouter } from 'next/navigation'
-
 import { AppContext } from '@/app/providers'
 import { Container } from '@/components/Container'
 import { Prose } from '@/components/Prose'
 import { formatDate } from '@/lib/formatDate'
+import Link from 'next/link'
 
 function ArrowLeftIcon(props) {
   return (
@@ -51,6 +50,17 @@ export function ArticleLayout({ article, children }) {
                 <span className="h-4 w-0.5 rounded-full bg-zinc-200 dark:bg-zinc-500" />
                 <span className="ml-3">{formatDate(article.date)}</span>
               </time>
+              <div className="mt-4">
+                {article.tags.map((tag) => (
+                  <Link
+                    key={tag}
+                    href={`/interests/${tag.toLowerCase()}`}
+                    className="mr-2 text-cyan-500 hover:text-cyan-600"
+                  >
+                    #{tag}
+                  </Link>
+                ))}
+              </div>
             </header>
             <Prose className="mt-8" data-mdx-content>
               {children}

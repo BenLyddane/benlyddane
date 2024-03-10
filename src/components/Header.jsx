@@ -130,106 +130,36 @@ const navItems = [
   { href: '/about', label: 'About' },
   { href: '/articles', label: 'Articles' },
   {
+    href: '/work',
+    label: 'Work',
+  },
+  {
     href: '/interests',
     label: 'Interests',
     subItems: [
-      { href: '/interests/golf', label: 'Golf' },
-      { href: '/interests/weight-lifting', label: 'Weight Lifting' },
-      {
-        href: '/interests/gaming',
-        label: 'Gaming',
-        subItems: [
-          {
-            href: '/interests/gaming/competitive-shooters',
-            label: 'Competitive Shooters',
-          },
-          {
-            href: '/interests/gaming/magic-the-gathering',
-            label: 'Magic: The Gathering',
-          },
-          { href: '/interests/gaming/chess', label: 'Chess' },
-        ],
-      },
-      {
-        href: '/interests/reading',
-        label: 'Reading',
-        subItems: [
-          { href: '/interests/reading/fiction', label: 'Fiction' },
-          {
-            href: '/interests/reading/non-fiction',
-            label: 'Non-Fiction',
-            subItems: [
-              {
-                href: '/interests/reading/non-fiction/business',
-                label: 'Business',
-              },
-              {
-                href: '/interests/reading/non-fiction/psychology',
-                label: 'Psychology',
-              },
-              {
-                href: '/interests/reading/non-fiction/philosophy',
-                label: 'Philosophy',
-              },
-              {
-                href: '/interests/reading/non-fiction/self-improvement',
-                label: 'Self-Improvement',
-              },
-              {
-                href: '/interests/reading/non-fiction/sales',
-                label: 'Sales',
-              },
-              {
-                href: '/interests/reading/non-fiction/biographies',
-                label: 'Biographies',
-              },
-            ],
-          },
-        ],
-      },
+      { href: '/interests/coding', label: 'Coding' },
       { href: '/interests/food', label: 'Food' },
-      {
-        href: '/interests/music-production',
-        label: 'Music Production',
-        subItems: [
-          { href: '/interests/music-production/guitar', label: 'Guitar' },
-          {
-            href: '/interests/music-production/electronic-music',
-            label: 'Electronic Music',
-          },
-        ],
-      },
+      { href: '/interests/gaming', label: 'Gaming' },
+      { href: '/interests/golf', label: 'Golf' },
+      { href: '/interests/learning', label: 'Learning' },
+      { href: '/interests/music', label: 'Music' },
+      { href: '/interests/reading', label: 'Reading' },
+      { href: '/interests/weight-lifting', label: 'Weight Lifting' },
     ],
   },
-  {
-    href: '/work',
-    label: 'Work',
-    subItems: [
-      {
-        href: '/work/mechanical-engineering',
-        label: 'Mechanical Engineering',
-      },
-      {
-        href: '/work/software-engineering',
-        label: 'Software Engineering',
-      },
-      { href: '/work/entrepreneurship', label: 'Entrepreneurship' },
-      { href: '/work/sales', label: 'Sales' },
-    ],
-  },
+
   {
     href: '/podcasts',
     label: 'Podcasts',
     subItems: [
-      { href: '/podcasts/thursdinner', label: 'Thursdinner' },
       {
-        href: '/podcasts/11-minute-construction',
+        href: 'https://www.11minuteconstruction.com',
         label: '11 Minute Construction Podcast',
       },
+      { href: 'https://www.thursdinner.com', label: 'Thursdinner' },
+    
     ],
   },
-  { href: '/travel', label: 'Travel' },
-  { href: '/contact', label: 'Contact' },
 ]
 function NavItem({ item, level = 0 }) {
   const [isOpen, setIsOpen] = useState(false)

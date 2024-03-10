@@ -38,12 +38,27 @@ Card.Link = function CardLink({ children, ...props }) {
   )
 }
 
-Card.Title = function CardTitle({ as, href, children }) {
+Card.Title = function CardTitle({ as, href, children, tags }) {
   let Component = as ?? 'h2'
 
   return (
-    <Component className="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
-      {href ? <Card.Link href={href}>{children}</Card.Link> : children}
+    <Component className="flex flex-col">
+      <div className="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
+        {href ? <Card.Link href={href}>{children}</Card.Link> : children}
+      </div>
+      {tags && (
+        <div className="mt-1 flex flex-wrap">
+          {tags.map((tag) => (
+            <Link
+              key={tag}
+              href={`/interests/${tag.toLowerCase()}`}
+              className="mr-2 text-sm text-cyan-500 hover:text-cyan-600"
+            >
+              #{tag}
+            </Link>
+          ))}
+        </div>
+      )}
     </Component>
   )
 }
