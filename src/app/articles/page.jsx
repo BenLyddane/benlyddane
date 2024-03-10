@@ -2,36 +2,56 @@ import { Card } from '@/components/Card'
 import { SimpleLayout } from '@/components/SimpleLayout'
 import { getAllArticles } from '@/lib/articles'
 import { formatDate } from '@/lib/formatDate'
+import Link from 'next/link'
 
 function Article({ article }) {
   return (
     <article className="md:grid md:grid-cols-4 md:items-baseline">
-      <Card className="md:col-span-3">
-        <Card.Title href={`/articles/${article.slug}`}>
-          {article.title}
-        </Card.Title>
-        <Card.Eyebrow
-          as="time"
-          dateTime={article.date}
-          className="md:hidden"
-          decorate
-        >
-          {formatDate(article.date)}
-        </Card.Eyebrow>
-        <Card.Description>{article.description}</Card.Description>
-        <Card.Cta>Read article</Card.Cta>
-      </Card>
-      <Card.Eyebrow
-        as="time"
+      <div className="md:col-span-3">
+        <div className="mb-4">
+          <Link href={`/articles/${article.slug}`}>
+            <h3 className="text-lg font-bold text-zinc-800 hover:text-cyan-500 dark:text-zinc-100">
+              {article.title}
+            </h3>
+          </Link>
+          <time
+            dateTime={article.date}
+            className="text-sm text-zinc-600 md:hidden dark:text-zinc-400"
+          >
+            {formatDate(article.date)}
+          </time>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            {article.description}
+          </p>
+        </div>
+        <div className="mt-4 flex flex-wrap">
+          {article.tags.map((tag) => (
+            <Link
+              key={tag}
+              href={`/interests/${tag.toLowerCase()}`}
+              className="mb-2 mr-2 text-sm text-cyan-500 hover:text-cyan-600"
+            >
+              #{tag}
+            </Link>
+          ))}
+        </div>
+        <div className="mt-6">
+          <Link href={`/articles/${article.slug}`}>
+            <span className="text-sm font-medium text-cyan-500 hover:text-cyan-600">
+              Read article
+            </span>
+          </Link>
+        </div>
+      </div>
+      <time
         dateTime={article.date}
-        className="mt-1 hidden md:block"
+        className="mt-1 hidden text-sm text-zinc-600 md:block dark:text-zinc-400"
       >
         {formatDate(article.date)}
-      </Card.Eyebrow>
+      </time>
     </article>
   )
 }
-
 export const metadata = {
   title: 'Articles',
   description:
