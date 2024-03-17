@@ -126,39 +126,12 @@ function MobileNavigation(props) {
   )
 }
 const navItems = [
-  { href: '/home', label: 'Home' },
-  { href: '/home/about', label: 'About' },
-  { href: '/home/articles', label: 'Articles' },
-  {
-    href: '/home/work',
-    label: 'Work',
-  },
-  {
-    href: '/home/interests',
-    label: 'Interests',
-    subItems: [
-      { href: '/home/interests/coding', label: 'Coding' },
-      { href: '/home/interests/home/food', label: 'Food' },
-      { href: '/home/interests/gaming', label: 'Gaming' },
-      { href: '/home/interests/golf', label: 'Golf' },
-      { href: '/home/interests/learning', label: 'Learning' },
-      { href: '/home/interests/music', label: 'Music' },
-      { href: '/home/interests/reading', label: 'Reading' },
-      { href: '/home/interests/weight-lifting', label: 'Weight Lifting' },
-    ],
-  },
-
-  {
-    href: '/home/podcasts',
-    label: 'Podcasts',
-    subItems: [
-      {
-        href: 'https://www.11minuteconstruction.com',
-        label: '11 Minute Construction Podcast',
-      },
-      { href: 'https://www.thursdinner.com', label: 'Thursdinner' },
-    ],
-  },
+  { href: '/admin/dashboard/habit-tracker', label: 'Habit Tracker' },
+  { href: '/admin/dashboard/workout-log', label: 'Workout Log' },
+  { href: '/admin/dashboard/food-log', label: 'Food Log' },
+  { href: '/admin/dashboard/blogger', label: 'Blogger' },
+  { href: '/admin/dashboard/music-manager', label: 'Music Manager' },
+  { href: '/admin/dashboard/code-manager', label: 'Code Manager' },
 ]
 function NavItem({ item, level = 0 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -191,11 +164,11 @@ function NavItem({ item, level = 0 }) {
       <Link
         href={item.href}
         className={clsx(
-          'relative flex items-center px-3 py-2 transition',
+          'relative flex items-center whitespace-nowrap px-3 py-2 transition', // Added 'whitespace-nowrap' to prevent wrapping
           isActive
             ? 'text-cyan-500 dark:text-cyan-400'
             : 'hover:text-cyan-500 dark:hover:text-cyan-400',
-          level === 0 && 'block py-2', // Add this line for mobile navigation styling
+          level === 0 && 'block py-2', // This line is for mobile navigation styling
         )}
       >
         {item.label}
@@ -306,7 +279,7 @@ function Avatar({ large = false, className, ...props }) {
   )
 }
 
-export function Header() {
+export function AdminHeader() {
   let isHomePage = usePathname() === '/'
 
   let headerRef = useRef(null)

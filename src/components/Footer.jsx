@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ContainerInner, ContainerOuter } from '@/components/Container'
-
+import { createClient } from '@/utils/supabase/server'
+import { signout } from '@/app/home/auth/actions/actions'
 function NavLink({ href, children }) {
   return (
     <Link
@@ -12,7 +13,11 @@ function NavLink({ href, children }) {
   )
 }
 
-export function Footer() {
+export async function Footer() {
+  const supabase = createClient()
+
+  const { data, error } = await supabase.auth.getUser()
+
   return (
     <footer className="mt-32 flex-none">
       <ContainerOuter>
@@ -30,11 +35,23 @@ export function Footer() {
                   <p>All rights reserved.</p>
                 </div>
               </div>
-              <NavLink href="/auth/login">
-                <button className="rounded-md bg-cyan-500 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
-                  Login
-                </button>
-              </NavLink>
+              {error || !data?.user ? (
+                <NavLink href="/home/auth/login">
+                  <button className="rounded-md bg-cyan-500 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
+                    Login
+                  </button>
+                </NavLink>
+              ) : (
+                <form>
+                  <button
+                    formAction={signout}
+                    type="submit"
+                    className="rounded-md bg-cyan-500 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  >
+                    Sign Out
+                  </button>
+                </form>
+              )}
             </div>
           </ContainerInner>
         </div>

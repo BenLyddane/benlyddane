@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
-import { login, signup } from '../actions/actions'
+import { login, signup } from '@/app/home/auth/actions/actions'
 import loginpic from '@/images/login.png'
 import { createClient } from '@/utils/supabase/server'
 
@@ -9,8 +9,9 @@ export default async function LoginPage() {
 
   const { data, error } = await supabase.auth.getUser()
   if (!error && data?.user) {
-    redirect('/admin/dashboard')
+    redirect('/admin')
   }
+
   return (
     <div className="flex min-h-screen items-center justify-center py-16">
       <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -54,19 +55,20 @@ export default async function LoginPage() {
                 </div>
                 <div className="flex flex-col items-center sm:flex-row sm:justify-between">
                   <button
-                    type="button"
-                    onClick={login}
+                    type="submit"
+                    formAction={login}
                     className="mb-4 w-full rounded-lg bg-cyan-500 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-cyan-600 focus:outline-none focus:ring-4 focus:ring-cyan-300 sm:mb-0 sm:w-auto dark:bg-cyan-600 dark:hover:bg-cyan-700 dark:focus:ring-cyan-800"
                   >
                     Log in
                   </button>
-                  <button
+                  {/* SignUp Button Commented out for Live Site, only login available for admin */}
+                  {/* <button
                     type="button"
                     onClick={signup}
                     className="w-full rounded-lg bg-zinc-800 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-zinc-900 focus:outline-none focus:ring-4 focus:ring-zinc-300 sm:ml-4 sm:w-auto dark:bg-zinc-600 dark:hover:bg-zinc-700 dark:focus:ring-zinc-800"
                   >
                     Sign up
-                  </button>
+                  </button> */}
                 </div>
               </form>
             </div>
