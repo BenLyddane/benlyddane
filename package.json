@@ -16,6 +16,9 @@
     "@mdx-js/loader": "^3.0.0",
     "@mdx-js/react": "^3.0.0",
     "@next/mdx": "^14.0.4",
+    "@supabase/auth-helpers-nextjs": "^0.9.0",
+    "@supabase/ssr": "^0.1.0",
+    "@supabase/supabase-js": "^2.39.8",
     "@tailwindcss/typography": "^0.5.4",
     "autoprefixer": "^10.4.12",
     "axios": "^1.6.7",
@@ -30,6 +33,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.1",
     "remark-gfm": "^4.0.0",
+    "swr": "^2.2.5",
     "tailwind-merge": "^2.2.1",
     "tailwindcss": "^3.4.1"
   },

@@ -1,5 +1,4 @@
 import Link from 'next/link'
-
 import { ContainerInner, ContainerOuter } from '@/components/Container'
 
 function NavLink({ href, children }) {
@@ -31,6 +30,11 @@ export function Footer() {
                   <p>All rights reserved.</p>
                 </div>
               </div>
+              <NavLink href="/auth/login">
+                <button className="rounded-md bg-cyan-500 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
+                  Login
+                </button>
+              </NavLink>
             </div>
           </ContainerInner>
         </div>
