@@ -126,30 +126,30 @@ function MobileNavigation(props) {
   )
 }
 const navItems = [
-  { href: '/home', label: 'Home' },
-  { href: '/home/about', label: 'About' },
-  { href: '/home/articles', label: 'Articles' },
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/articles', label: 'Articles' },
   {
-    href: '/home/work',
+    href: '/work',
     label: 'Work',
   },
   {
-    href: '/home/interests',
+    href: '/interests',
     label: 'Interests',
     subItems: [
-      { href: '/home/interests/coding', label: 'Coding' },
-      { href: '/home/interests/home/food', label: 'Food' },
-      { href: '/home/interests/gaming', label: 'Gaming' },
-      { href: '/home/interests/golf', label: 'Golf' },
-      { href: '/home/interests/learning', label: 'Learning' },
-      { href: '/home/interests/music', label: 'Music' },
-      { href: '/home/interests/reading', label: 'Reading' },
-      { href: '/home/interests/weight-lifting', label: 'Weight Lifting' },
+      { href: '/interests/coding', label: 'Coding' },
+      { href: '/interests/food', label: 'Food' },
+      { href: '/interests/gaming', label: 'Gaming' },
+      { href: '/interests/golf', label: 'Golf' },
+      { href: '/interests/learning', label: 'Learning' },
+      { href: '/interests/music', label: 'Music' },
+      { href: '/interests/reading', label: 'Reading' },
+      { href: '/interests/weight-lifting', label: 'Weight Lifting' },
     ],
   },
 
   {
-    href: '/home/podcasts',
+    href: '/podcasts',
     label: 'Podcasts',
     subItems: [
       {

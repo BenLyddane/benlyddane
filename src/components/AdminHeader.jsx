@@ -125,14 +125,17 @@ function MobileNavigation(props) {
     </Popover>
   )
 }
+
 const navItems = [
-  { href: '/admin/dashboard/habit-tracker', label: 'Habit Tracker' },
-  { href: '/admin/dashboard/workout-log', label: 'Workout Log' },
-  { href: '/admin/dashboard/food-log', label: 'Food Log' },
-  { href: '/admin/dashboard/blogger', label: 'Blogger' },
-  { href: '/admin/dashboard/music-manager', label: 'Music Manager' },
-  { href: '/admin/dashboard/code-manager', label: 'Code Manager' },
+  { href: '/admin/habits', label: 'Habit Tracker' },
+  { href: '/admin/workout', label: 'Workout Log' },
+  { href: '/admin/food', label: 'Food Log' },
+  { href: '/admin/blog', label: 'Blogger' },
+  { href: '/admin/music', label: 'Music Manager' },
+  { href: '/admin/code', label: 'Code Manager' },
+  { href: '/admin/golf', label: 'Golf Manager' },
 ]
+
 function NavItem({ item, level = 0 }) {
   const [isOpen, setIsOpen] = useState(false)
   const timeoutRef = useRef(null)
@@ -164,11 +167,11 @@ function NavItem({ item, level = 0 }) {
       <Link
         href={item.href}
         className={clsx(
-          'relative flex items-center whitespace-nowrap px-3 py-2 transition', // Added 'whitespace-nowrap' to prevent wrapping
+          'relative flex items-center whitespace-nowrap px-3 py-2 transition',
           isActive
             ? 'text-cyan-500 dark:text-cyan-400'
             : 'hover:text-cyan-500 dark:hover:text-cyan-400',
-          level === 0 && 'block py-2', // This line is for mobile navigation styling
+          level === 0 && 'block py-2',
         )}
       >
         {item.label}
@@ -205,6 +208,7 @@ function NavItem({ item, level = 0 }) {
     </li>
   )
 }
+
 function DesktopNavigation(props) {
   return (
     <nav {...props}>
@@ -279,7 +283,7 @@ function Avatar({ large = false, className, ...props }) {
   )
 }
 
-export function AdminHeader() {
+export function AdminHeader({ email }) {
   let isHomePage = usePathname() === '/'
 
   let headerRef = useRef(null)
@@ -445,11 +449,18 @@ export function AdminHeader() {
             }}
           >
             <div className="relative flex gap-4">
-              <div className="flex flex-1">
+              <div className="flex flex-1 items-center">
                 {!isHomePage && (
-                  <AvatarContainer>
-                    <Avatar />
-                  </AvatarContainer>
+                  <>
+                    <AvatarContainer>
+                      <Avatar />
+                    </AvatarContainer>
+                    {email && (
+                      <div className="ml-3 text-sm text-zinc-600 dark:text-zinc-400">
+                        {email}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
               <div className="flex flex-1 justify-end md:justify-center">

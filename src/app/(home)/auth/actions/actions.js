@@ -19,7 +19,7 @@ export async function login(formData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/admin/dashboard')
+  redirect('/admin')
 }
 
 export async function signup(formData) {

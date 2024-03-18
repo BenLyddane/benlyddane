@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { redirect } from 'next/navigation'
-import { login, signup } from '@/app/home/auth/actions/actions'
+import { login, signup } from '@/app/(home)/auth/actions/actions'
 import loginpic from '@/images/login.png'
 import { createClient } from '@/utils/supabase/server'
 

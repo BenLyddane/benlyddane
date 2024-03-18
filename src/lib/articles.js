@@ -1,7 +1,7 @@
 import glob from 'fast-glob'
 
 async function importArticle(articleFilename) {
-  let { article } = await import(`../app/home/articles/${articleFilename}`)
+  let { article } = await import(`../app/(home)/articles/${articleFilename}`)
 
   return {
     slug: articleFilename.replace(/(\/page)?\.mdx$/, ''),
