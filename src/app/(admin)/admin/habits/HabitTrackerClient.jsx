@@ -13,16 +13,24 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select'
-import TimePicker from '@/components/ui/time-picker'
 import { useToast } from '@/components/ui/use-toast'
+import { format } from 'date-fns'
+import { CalendarIcon } from '@radix-ui/react-icons'
+import { cn } from '@/utils/cn'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 
 const HabitTrackerClient = ({ initialHabits }) => {
   const [habits, setHabits] = useState(initialHabits)
   const [newHabit, setNewHabit] = useState('')
   const [dueFrequency, setDueFrequency] = useState('daily')
-  const [dueTime, setDueTime] = useState(new Date())
+  const [dueTime, setDueTime] = useState('morning')
   const [dueWeekdays, setDueWeekdays] = useState([])
-  const [dueMonthDays, setDueMonthDays] = useState([])
+  const [dueDate, setDueDate] = useState(null)
   const supabase = createClient()
   const { toast } = useToast()
 
@@ -76,12 +84,9 @@ const HabitTrackerClient = ({ initialHabits }) => {
             completed: false,
             user_id: user.id,
             due_frequency: dueFrequency,
-            due_time: dueTime.toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            }),
+            due_time: dueTime,
             due_weekdays: dueWeekdays,
-            due_month_days: dueMonthDays,
+            due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
           })
 
           if (error) {
@@ -94,9 +99,9 @@ const HabitTrackerClient = ({ initialHabits }) => {
           } else {
             setNewHabit('')
             setDueFrequency('daily')
-            setDueTime(new Date())
+            setDueTime('morning')
             setDueWeekdays([])
-            setDueMonthDays([])
+            setDueDate(null)
             toast({
               title: 'Habit added successfully',
             })
@@ -175,7 +180,7 @@ const HabitTrackerClient = ({ initialHabits }) => {
         .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
         .join(', ')}`
     } else if (habit.due_frequency === 'monthly') {
-      return `On day(s) ${habit.due_month_days.join(', ')} of the month`
+      return `On ${format(new Date(habit.due_date), 'MMMM do')}`
     }
   }
 
@@ -209,7 +214,20 @@ const HabitTrackerClient = ({ initialHabits }) => {
                   <SelectItem value="monthly">Monthly</SelectItem>
                 </SelectContent>
               </Select>
-              <TimePicker value={dueTime} onChange={setDueTime} />
+              <Select
+                onValueChange={setDueTime}
+                defaultValue="morning"
+                className="w-40"
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Time" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="morning">Morning</SelectItem>
+                  <SelectItem value="afternoon">Afternoon</SelectItem>
+                  <SelectItem value="evening">Evening</SelectItem>
+                </SelectContent>
+              </Select>
               <Button onClick={addHabit}>Add Habit</Button>
             </div>
             {dueFrequency === 'weekly' && (
@@ -248,26 +266,33 @@ const HabitTrackerClient = ({ initialHabits }) => {
             )}
             {dueFrequency === 'monthly' && (
               <div className="mt-4">
-                <Label>Select Month Days</Label>
-                <div className="mt-2 grid grid-cols-7 gap-2">
-                  {Array.from({ length: 31 }, (_, i) => (
-                    <div key={i + 1} className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={dueMonthDays.includes(i + 1)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setDueMonthDays([...dueMonthDays, i + 1])
-                          } else {
-                            setDueMonthDays(
-                              dueMonthDays.filter((d) => d !== i + 1),
-                            )
-                          }
-                        }}
-                      />
-                      <Label className="text-sm">{i + 1}</Label>
-                    </div>
-                  ))}
-                </div>
+                <Label>Select Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        'w-[240px] justify-start text-left font-normal',
+                        !dueDate && 'text-muted-foreground',
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dueDate ? (
+                        format(dueDate, 'PPP')
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dueDate}
+                      onSelect={setDueDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             )}
             <div className="mt-6 space-y-4">
@@ -279,11 +304,7 @@ const HabitTrackerClient = ({ initialHabits }) => {
                   <div>
                     <Label>{habit.name}</Label>
                     <p className="text-sm text-gray-500">
-                      {renderDueFrequency(habit)} •{' '}
-                      {new Date(habit.due_time).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {renderDueFrequency(habit)} • {habit.due_time}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
