@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import HabitTrackerClient from './HabitTrackerClient'
-
+import HabitCompletionGraph from './habit_records'
 const HabitTrackerPage = async () => {
   const supabase = createClient()
 
@@ -23,7 +23,12 @@ const HabitTrackerPage = async () => {
       return <div>Error fetching habits. Please try again later.</div>
     }
 
-    return <HabitTrackerClient initialHabits={habits || []} />
+    return (
+      <>
+        <HabitTrackerClient initialHabits={habits || []} />
+        <HabitCompletionGraph />
+      </>
+    )
   } catch (error) {
     console.error('Error fetching habits:', error)
     return <div>Error fetching habits. Please try again later.</div>

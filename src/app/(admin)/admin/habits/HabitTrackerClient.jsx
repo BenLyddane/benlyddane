@@ -14,51 +14,45 @@ import {
   SelectItem,
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
-import { format } from 'date-fns'
-import { CalendarIcon } from '@radix-ui/react-icons'
-import { cn } from '@/utils/cn'
-import { Calendar } from '@/components/ui/calendar'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { format, isToday, isTomorrow, isThisWeek, isDate } from 'date-fns'
+import TimePicker from '@/components/ui/time-picker'
+import { Toggle } from '@/components/ui/toggle'
 
-const HabitTrackerClient = ({ initialHabits }) => {
-  const [habits, setHabits] = useState(initialHabits)
+const HabitTrackerClient = () => {
+  const [habits, setHabits] = useState([])
   const [newHabit, setNewHabit] = useState('')
   const [dueFrequency, setDueFrequency] = useState('daily')
-  const [dueTime, setDueTime] = useState('morning')
+  const [dueTimes, setDueTimes] = useState([new Date(0, 0, 0, 8, 0)])
   const [dueWeekdays, setDueWeekdays] = useState([])
-  const [dueDate, setDueDate] = useState(null)
   const supabase = createClient()
   const { toast } = useToast()
 
   useEffect(() => {
-    fetchHabits()
-  }, [habits])
+    fetchHabitsAndRecords()
+  }, [])
 
-  const fetchHabits = async () => {
+  const fetchHabitsAndRecords = async () => {
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser()
 
       if (user) {
-        const { data, error } = await supabase
+        const { data: habitsData, error: habitsError } = await supabase
           .from('habits')
-          .select('*')
+          .select('*, habit_records(*)')
           .eq('user_id', user.id)
+          .order('created_at', { ascending: true }) // Order habits by creation time
 
-        if (error) {
-          console.error('Error fetching habits:', error)
+        if (habitsError) {
+          console.error('Error fetching habits:', habitsError)
           toast({
             variant: 'destructive',
             title: 'Error fetching habits',
             description: 'Please try again later.',
           })
         } else {
-          setHabits(data || [])
+          setHabits(habitsData || [])
         }
       }
     } catch (error) {
@@ -80,13 +74,12 @@ const HabitTrackerClient = ({ initialHabits }) => {
 
         if (user) {
           const { data, error } = await supabase.from('habits').insert({
-            name: newHabit,
-            completed: false,
             user_id: user.id,
+            name: newHabit,
             due_frequency: dueFrequency,
-            due_time: dueTime,
+            due_times: dueTimes.map((time) => format(time, 'HH:mm')),
             due_weekdays: dueWeekdays,
-            due_date: dueDate ? format(dueDate, 'yyyy-MM-dd') : null,
+            completed_times: Array(dueTimes.length).fill(false),
           })
 
           if (error) {
@@ -99,9 +92,9 @@ const HabitTrackerClient = ({ initialHabits }) => {
           } else {
             setNewHabit('')
             setDueFrequency('daily')
-            setDueTime('morning')
+            setDueTimes([new Date(0, 0, 0, 8, 0)])
             setDueWeekdays([])
-            setDueDate(null)
+            fetchHabitsAndRecords() // Fetch updated habits and records
             toast({
               title: 'Habit added successfully',
             })
@@ -118,21 +111,73 @@ const HabitTrackerClient = ({ initialHabits }) => {
     }
   }
 
-  const toggleHabit = async (habitId) => {
+  const toggleHabit = async (habitId, timeIndex) => {
     try {
       const habit = habits.find((habit) => habit.id === habitId)
-      const { data, error } = await supabase
+      const dueTime = habit.due_times[timeIndex]
+      const completedTimes = [...(habit.completed_times || [])]
+      const isCompleted = !completedTimes[timeIndex]
+      completedTimes[timeIndex] = isCompleted
+
+      const { error: updateError } = await supabase
         .from('habits')
-        .update({ completed: !habit.completed })
+        .update({ completed_times: completedTimes })
         .eq('id', habitId)
-      if (error) {
-        console.error('Error updating habit:', error)
+
+      if (updateError) {
+        console.error('Error updating habit:', updateError)
         toast({
           variant: 'destructive',
           title: 'Error updating habit',
           description: 'Please try again later.',
         })
       } else {
+        const currentDate = new Date()
+        const existingRecord = await supabase
+          .from('habit_records')
+          .select('id')
+          .eq('habit_id', habitId)
+          .eq('due_time', dueTime)
+          .single()
+
+        if (existingRecord.data) {
+          const { error: recordUpdateError } = await supabase
+            .from('habit_records')
+            .update({
+              is_completed: isCompleted,
+              completed_at: isCompleted ? currentDate : null,
+            })
+            .eq('id', existingRecord.data.id)
+
+          if (recordUpdateError) {
+            console.error('Error updating habit record:', recordUpdateError)
+            toast({
+              variant: 'destructive',
+              title: 'Error updating habit record',
+              description: 'Please try again later.',
+            })
+          }
+        } else {
+          const { error: recordInsertError } = await supabase
+            .from('habit_records')
+            .insert({
+              habit_id: habitId,
+              due_time: dueTime,
+              is_completed: isCompleted,
+              completed_at: isCompleted ? currentDate : null,
+            })
+
+          if (recordInsertError) {
+            console.error('Error inserting habit record:', recordInsertError)
+            toast({
+              variant: 'destructive',
+              title: 'Error inserting habit record',
+              description: 'Please try again later.',
+            })
+          }
+        }
+
+        fetchHabitsAndRecords() // Fetch updated habits and records
         toast({
           title: 'Habit updated successfully',
         })
@@ -150,6 +195,7 @@ const HabitTrackerClient = ({ initialHabits }) => {
   const deleteHabit = async (habitId) => {
     try {
       const { error } = await supabase.from('habits').delete().eq('id', habitId)
+
       if (error) {
         console.error('Error deleting habit:', error)
         toast({
@@ -158,6 +204,7 @@ const HabitTrackerClient = ({ initialHabits }) => {
           description: 'Please try again later.',
         })
       } else {
+        fetchHabitsAndRecords() // Fetch updated habits and records
         toast({
           title: 'Habit deleted successfully',
         })
@@ -179,8 +226,33 @@ const HabitTrackerClient = ({ initialHabits }) => {
       return `Every ${habit.due_weekdays
         .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
         .join(', ')}`
-    } else if (habit.due_frequency === 'monthly') {
-      return `On ${format(new Date(habit.due_date), 'MMMM do')}`
+    }
+  }
+
+  const renderCompletionStatus = (habit, timeIndex) => {
+    const dueTime = habit.due_times[timeIndex]
+    const isCompleted = habit.completed_times[timeIndex]
+    const currentDate = new Date()
+    const dueDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate(),
+      parseInt(dueTime.split(':')[0], 10),
+      parseInt(dueTime.split(':')[1], 10),
+    )
+
+    if (isCompleted) {
+      return 'Completed'
+    } else if (isToday(dueDate)) {
+      return 'Due Today'
+    } else if (isTomorrow(dueDate)) {
+      return 'Due Tomorrow'
+    } else if (isThisWeek(dueDate)) {
+      return 'Due This Week'
+    } else {
+      return isDate(dueDate)
+        ? `Due on ${format(dueDate, 'MMM d')}`
+        : 'Due Date Unavailable'
     }
   }
 
@@ -211,25 +283,51 @@ const HabitTrackerClient = ({ initialHabits }) => {
                 <SelectContent>
                   <SelectItem value="daily">Daily</SelectItem>
                   <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
                 </SelectContent>
               </Select>
-              <Select
-                onValueChange={setDueTime}
-                defaultValue="morning"
-                className="w-40"
+              <Button
+                onClick={() =>
+                  setDueTimes([...dueTimes, new Date(0, 0, 0, 8, 0)])
+                }
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Time" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="morning">Morning</SelectItem>
-                  <SelectItem value="afternoon">Afternoon</SelectItem>
-                  <SelectItem value="evening">Evening</SelectItem>
-                </SelectContent>
-              </Select>
+                Add Time
+              </Button>
               <Button onClick={addHabit}>Add Habit</Button>
             </div>
+            {dueTimes.map((time, index) => (
+              <div key={index} className="mt-4 flex items-center space-x-4">
+                <TimePicker
+                  value={time}
+                  onChange={(newTime) => {
+                    const newTimes = [...dueTimes]
+                    newTimes[index] = newTime
+                    setDueTimes(newTimes)
+                  }}
+                />
+                <Toggle
+                  pressed={time.getHours() < 12}
+                  onPressedChange={(isAM) => {
+                    const newTimes = [...dueTimes]
+                    const hours = isAM ? time.getHours() : time.getHours() + 12
+                    newTimes[index] = new Date(time.setHours(hours))
+                    setDueTimes(newTimes)
+                  }}
+                  className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
+                >
+                  {time.getHours() < 12 ? 'AM' : 'PM'}
+                </Toggle>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    const newTimes = [...dueTimes]
+                    newTimes.splice(index, 1)
+                    setDueTimes(newTimes)
+                  }}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
             {dueFrequency === 'weekly' && (
               <div className="mt-4">
                 <Label>Select Weekdays</Label>
@@ -264,37 +362,6 @@ const HabitTrackerClient = ({ initialHabits }) => {
                 </div>
               </div>
             )}
-            {dueFrequency === 'monthly' && (
-              <div className="mt-4">
-                <Label>Select Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        'w-[240px] justify-start text-left font-normal',
-                        !dueDate && 'text-muted-foreground',
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dueDate ? (
-                        format(dueDate, 'PPP')
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={dueDate}
-                      onSelect={setDueDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            )}
             <div className="mt-6 space-y-4">
               {habits.map((habit) => (
                 <div
@@ -304,14 +371,39 @@ const HabitTrackerClient = ({ initialHabits }) => {
                   <div>
                     <Label>{habit.name}</Label>
                     <p className="text-sm text-gray-500">
-                      {renderDueFrequency(habit)} • {habit.due_time}
+                      {renderDueFrequency(habit)}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={habit.completed}
-                      onCheckedChange={() => toggleHabit(habit.id)}
-                    />
+                    {habit.due_times.map((time, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={
+                            habit.completed_times &&
+                            habit.completed_times.length > index &&
+                            habit.completed_times[index]
+                          }
+                          onCheckedChange={() => toggleHabit(habit.id, index)}
+                        />
+                        <Label className="text-sm">
+                          {time} - {renderCompletionStatus(habit, index)}
+                        </Label>
+                        {habit.habit_records
+                          ?.filter((record) => record.due_time === time)
+                          .map((record) => (
+                            <span
+                              key={record.id}
+                              className="text-sm text-gray-500"
+                            >
+                              {record.is_completed &&
+                                `(Completed at ${format(
+                                  new Date(record.completed_at),
+                                  'MMM d, yyyy h:mm a',
+                                )})`}
+                            </span>
+                          ))}
+                      </div>
+                    ))}
                     <Button
                       variant="ghost"
                       onClick={() => deleteHabit(habit.id)}
