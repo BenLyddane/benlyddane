@@ -32,14 +32,41 @@ const WorkoutSession = () => {
 
   const supabase = createClient()
 
+  const fetchWorkoutExercises = async (workoutId) => {
+    if (!workoutId) return
+
+    const { data, error } = await supabase
+      .from('workout_exercises')
+      .select('*, exercises(name)')
+      .eq('workout_id', workoutId)
+
+    if (error) {
+      console.error('Error fetching workout exercises:', error)
+      toast({
+        title: 'Error fetching workout exercises',
+        description: error.message,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setWorkoutExercises(data)
+  }
+
   useEffect(() => {
     const fetchData = async () => {
-      const user = await supabase.auth.getUser()
+      const { data: userData, error: userError } = await supabase.auth.getUser()
+      if (userError || !userData.user) {
+        console.error('User authentication error:', userError)
+        toast({ title: 'User not authenticated', variant: 'destructive' })
+        return
+      }
+
+      // Fetch workouts data
       const { data: workoutsData, error: workoutsError } = await supabase
         .from('workouts')
         .select('*')
-        .eq('user_id', user.data.user.id)
-
+        .eq('user_id', userData.user.id)
       if (workoutsError) {
         console.error('Error fetching workouts:', workoutsError)
         toast({
@@ -51,11 +78,11 @@ const WorkoutSession = () => {
         setWorkouts(workoutsData)
       }
 
+      // Fetch exercises data
       const { data: exercisesData, error: exercisesError } = await supabase
         .from('exercises')
         .select('*')
-        .eq('user_id', user.data.user.id)
-
+        .eq('user_id', userData.user.id)
       if (exercisesError) {
         console.error('Error fetching exercises:', exercisesError)
         toast({
@@ -66,75 +93,60 @@ const WorkoutSession = () => {
       } else {
         setExercises(exercisesData)
       }
-
-      // Check for ongoing workout session
-      const { data: sessionData, error: sessionError } = await supabase
-        .from('workout_sessions')
-        .select('*')
-        .eq('user_id', user.data.user.id)
-        .is('completed_at', null)
-        .order('started_at', { ascending: false })
-        .limit(1)
-
-      if (sessionError) {
-        console.error('Error fetching workout session:', sessionError)
-        toast({
-          title: 'Error fetching workout session',
-          description: sessionError.message,
-          variant: 'destructive',
-        })
-      } else if (sessionData.length > 0) {
-        setSelectedWorkoutId(sessionData[0].workout_id)
-        setCurrentExerciseIndex(sessionData[0].current_exercise_index)
-        setCurrentSet(sessionData[0].current_set)
-        setCurrentWorkoutSession(sessionData[0])
-      }
     }
 
     fetchData()
   }, [])
 
   useEffect(() => {
-    const fetchWorkoutExercises = async () => {
-      if (selectedWorkoutId) {
-        const { data: workoutExercisesData, error: workoutExercisesError } =
-          await supabase
-            .from('workout_exercises')
-            .select('*')
-            .eq('workout_id', selectedWorkoutId)
+    const fetchWorkoutExercises = async (workoutId) => {
+      if (!workoutId) return
 
-        if (workoutExercisesError) {
-          console.error(
-            'Error fetching workout exercises:',
-            workoutExercisesError,
+      const { data: workoutExercisesData, error: workoutExercisesError } =
+        await supabase
+          .from('workout_exercises')
+          .select(
+            `
+          *,
+          exercises:name (
+            name
           )
-          toast({
-            title: 'Error fetching workout exercises',
-            description: workoutExercisesError.message,
-            variant: 'destructive',
-          })
-        } else {
-          setWorkoutExercises(workoutExercisesData)
-          setTimerDuration(workoutExercisesData[0].rest_timer_duration)
-        }
+        `,
+          )
+          .eq('workout_id', workoutId)
+
+      if (workoutExercisesError) {
+        console.error(
+          'Error fetching workout exercises:',
+          workoutExercisesError,
+        )
+        toast({
+          title: 'Error fetching workout exercises',
+          description: workoutExercisesError.message,
+          variant: 'destructive',
+        })
+        return
       }
+
+      setWorkoutExercises(workoutExercisesData)
     }
 
     fetchWorkoutExercises()
-  }, [selectedWorkoutId])
+  }, [selectedWorkoutId, currentWorkoutSession, supabase, toast])
 
   const startOrContinueWorkout = async () => {
-    console.log('Attempting to start or continue a workout...')
+    console.log('Start Workout button clicked.')
 
     const { data: userData, error: userError } = await supabase.auth.getUser()
+    console.log('Auth attempt:', { userData, userError })
 
     if (userError || !userData.user) {
-      console.log('User authentication error:', userError)
+      console.log('User authentication failed:', userError)
       toast({ title: 'User not authenticated', variant: 'destructive' })
       return
     }
-    const user = userData.user
-    console.log('User authenticated:', user.id)
+
+    console.log('Authenticated user ID:', userData.user.id)
 
     if (!selectedWorkoutId) {
       console.log('No workout selected.')
@@ -142,23 +154,19 @@ const WorkoutSession = () => {
       return
     }
 
-    console.log(
-      `Checking for existing sessions for workout ID: ${selectedWorkoutId}`,
-    )
-
-    // Fetch sessions without using .single()
-    const { data: sessions, error: sessionFetchError } = await supabase
+    const { data: sessions, error: fetchError } = await supabase
       .from('workout_sessions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userData.user.id)
       .eq('workout_id', selectedWorkoutId)
       .is('completed_at', null)
+    console.log('Session fetch attempt:', { sessions, fetchError })
 
-    if (sessionFetchError) {
-      console.log('Error fetching existing session:', sessionFetchError)
+    if (fetchError) {
+      console.log('Error fetching sessions:', fetchError)
       toast({
-        title: 'Error fetching session',
-        description: sessionFetchError.message,
+        title: 'Error fetching sessions',
+        description: fetchError.message,
         variant: 'destructive',
       })
       return
@@ -167,47 +175,37 @@ const WorkoutSession = () => {
     if (sessions && sessions.length > 0) {
       console.log('Existing session found:', sessions[0])
       setCurrentWorkoutSession(sessions[0])
-      toast({
-        title: 'Continuing existing session',
-        variant: 'success',
-      })
+      fetchWorkoutExercises(selectedWorkoutId) // Fetch exercises for this session
+      toast({ title: 'Continuing existing session', variant: 'success' })
     } else {
-      console.log('No existing session found, creating a new one...')
+      console.log('No existing session found, creating a new one.')
 
-      // Create a new session
-      const { data: newSession, error: sessionCreationError } = await supabase
+      const { data: createdSessions, error: creationError } = await supabase
         .from('workout_sessions')
         .insert({
-          user_id: user.id,
+          user_id: userData.user.id,
           workout_id: selectedWorkoutId,
           started_at: new Date().toISOString(),
         })
+        .select()
+      console.log('Session creation attempt:', {
+        createdSessions,
+        creationError,
+      })
 
-      if (sessionCreationError) {
-        console.error('Error creating new session:', sessionCreationError)
+      if (creationError || !createdSessions || createdSessions.length === 0) {
+        console.log('Error creating new session:', creationError)
         toast({
           title: 'Error creating session',
-          description: sessionCreationError.message,
+          description:
+            creationError?.message || 'Unknown error creating session',
           variant: 'destructive',
-        })
-        return
-      }
-
-      // Since we're not using .single(), ensure newSession is an array and has at least one element
-      if (newSession && newSession.length > 0) {
-        console.log('New session started successfully:', newSession[0])
-        setCurrentWorkoutSession(newSession[0])
-        toast({
-          title: 'New workout session started',
-          variant: 'success',
         })
       } else {
-        console.error('Unexpected error: Session was not created.')
-        toast({
-          title: 'Session creation failed',
-          description: 'The workout session could not be started.',
-          variant: 'destructive',
-        })
+        console.log('New session created successfully:', createdSessions[0])
+        setCurrentWorkoutSession(createdSessions[0])
+        fetchWorkoutExercises(selectedWorkoutId) // Immediately fetch exercises for the new session
+        toast({ title: 'New workout session started', variant: 'success' })
       }
     }
   }
@@ -377,7 +375,6 @@ const WorkoutSession = () => {
       setRpe('')
     }
   }
-
   const finishWorkout = async () => {
     const { error } = await supabase
       .from('workout_sessions')
@@ -392,12 +389,15 @@ const WorkoutSession = () => {
         variant: 'destructive',
       })
     } else {
+      // Assuming you want to allow selecting a new workout immediately after finishing
+      // the current session without refreshing or navigating away:
       setCurrentWorkoutSession(null)
-      setSelectedWorkoutId(null)
+      // setSelectedWorkoutId(null); // Consider if you want to clear this selection
       setCurrentExerciseIndex(0)
       setCurrentSet(1)
       setIsTimerRunning(false)
       setTimeRemaining(0)
+      setWorkoutExercises([]) // Clear exercises to prepare for the next selection
       toast({
         title: 'Workout completed',
         description: 'Great job! You finished your workout session.',
@@ -405,9 +405,14 @@ const WorkoutSession = () => {
       })
     }
   }
+
   const handleWorkoutSelectionChange = (value) => {
     setSelectedWorkoutId(value)
-    console.log(value) // To verify the selected workout ID
+    console.log('Workout selected:', value)
+    // Resetting session-related states to prepare for a potential new workout session
+    setCurrentExerciseIndex(0)
+    setCurrentSet(1)
+    // Do not automatically fetch or start a session here to allow manual start
   }
 
   useEffect(() => {
@@ -458,14 +463,14 @@ const WorkoutSession = () => {
             {workouts.find((workout) => workout.id === selectedWorkoutId)
               ?.name || ''}
           </h2>
+          <h3 className="mb-2 text-xl font-bold">
+            Exercise:{' '}
+            {workoutExercises.length > 0 &&
+            currentExerciseIndex < workoutExercises.length
+              ? workoutExercises[currentExerciseIndex].exercises.name
+              : 'Loading...'}
+          </h3>
           <div>
-            <h3 className="mb-2 text-xl font-bold">
-              {exercises.find(
-                (exercise) =>
-                  exercise.id ===
-                  workoutExercises[currentExerciseIndex]?.exercise_id,
-              )?.name || ''}
-            </h3>
             <p>
               Set {currentSet} of{' '}
               {workoutExercises[currentExerciseIndex]?.sets || 0}
