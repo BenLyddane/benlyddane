@@ -1,7 +1,7 @@
 import { Providers } from '@/app/providers'
 
 import '@/styles/tailwind.css'
-
+import { Toaster } from '@/components/ui/toaster'
 export const metadata = {
   title: {
     template: '%s - Ben Lyddane',
@@ -22,6 +22,7 @@ export default function RootLayout({ children }) {
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <body className="flex h-full bg-zinc-50 font-sans dark:bg-black">
         <Providers>{children}</Providers>
+        <Toaster />
       </body>
     </html>
   )
