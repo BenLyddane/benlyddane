@@ -15,7 +15,6 @@ export default function ThankYou() {
         const response = await client.lists.batchListMembers('list_id', {
           members: [{}],
         })
-        console.log(response)
       } catch (error) {
         console.error('Error:', error)
       }

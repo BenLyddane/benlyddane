@@ -1,10 +1,16 @@
-// ExerciseSearch.jsx
 import React, { useState, useEffect } from 'react'
-import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
 
 const ExerciseSearch = ({
   exercises,
-  setSelectedExerciseId,
+  selectedExercise,
+  setSelectedExercise,
   setExerciseSearch,
 }) => {
   const [filteredExercises, setFilteredExercises] = useState([])
@@ -21,43 +27,50 @@ const ExerciseSearch = ({
     setFilteredExercises(filteredExercises)
   }
 
+  const handleExerciseSelect = (exercise) => {
+    setSelectedExercise(exercise)
+    setExerciseSearch(exercise.name)
+    setShowExerciseDropdown(false)
+  }
+
   return (
-    <div className="relative">
-      <Input
-        type="text"
-        onChange={(e) => {
-          setExerciseSearch(e.target.value)
-          handleSearchExercise(e.target.value)
-        }}
-        placeholder="Search exercises..."
-        onClick={() => setShowExerciseDropdown(!showExerciseDropdown)}
-      />
-      {showExerciseDropdown && (
-        <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg dark:bg-gray-800">
-          {filteredExercises.length > 0 ? (
-            <ul className="py-1">
-              {filteredExercises.map((exercise) => (
-                <li
-                  key={exercise.id}
-                  className="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-                  onClick={() => {
-                    setSelectedExerciseId(exercise.id)
-                    setExerciseSearch(exercise.name)
-                    setShowExerciseDropdown(false)
-                  }}
-                >
-                  {exercise.name}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="px-4 py-2 text-gray-600 dark:text-gray-400">
-              No exercises found.
-            </div>
+    <Select
+      value={selectedExercise?.id}
+      onValueChange={(value) =>
+        handleExerciseSelect(exercises.find((ex) => ex.id === value))
+      }
+      placeholder="Search exercises..."
+      onOpenChange={setShowExerciseDropdown}
+    >
+      <SelectTrigger>
+        <SelectValue>
+          {selectedExercise ? selectedExercise.name : 'Search exercises...'}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <div className="py-1">
+          {showExerciseDropdown && (
+            <>
+              {filteredExercises.length > 0 ? (
+                filteredExercises.map((exercise) => (
+                  <SelectItem
+                    key={exercise.id}
+                    value={exercise.id}
+                    onClick={() => handleExerciseSelect(exercise)}
+                  >
+                    {exercise.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                  No exercises found.
+                </div>
+              )}
+            </>
           )}
         </div>
-      )}
-    </div>
+      </SelectContent>
+    </Select>
   )
 }
 

@@ -1,0 +1,702 @@
+You are working on a Next JS app router project that uses supabase, tailwind css, and the ShadCN components library. Here is a view of the application. 
+
+Table Definitions for Workouts:
+
+Exercises holds a database of exercises the user can choose from when building workouts. 
+create table
+  public.exercises (
+    id serial,
+    name character varying(255) not null,
+    user_id uuid null,
+    body_part character varying(255) null,
+    constraint exercises_pkey primary key (id),
+    constraint exercises_user_id_fkey foreign key (user_id) references auth.users (id)
+  ) tablespace pg_default;
+
+  Workouts holds the users workout templates they have created, they can run these workouts using sessions
+
+  create table
+  public.workouts (
+    id serial,
+    name character varying(255) not null,
+    user_id uuid null,
+    created_at timestamp with time zone null default current_timestamp,
+    constraint workouts_pkey primary key (id),
+    constraint workouts_user_id_fkey foreign key (user_id) references auth.users (id)
+  ) tablespace pg_default;
+
+  workout_exercises table holds the exercises they assigned to that workout and the weights/reps that are there current target
+
+  create table
+  public.workout_exercises (
+    id serial,
+    workout_id integer null,
+    exercise_id integer null,
+    sets integer not null,
+    reps integer not null,
+    weight numeric(10, 2) not null,
+    rest_timer_duration integer null,
+    constraint workout_exercises_pkey primary key (id),
+    constraint workout_exercises_exercise_id_fkey foreign key (exercise_id) references exercises (id) on delete cascade,
+    constraint workout_exercises_workout_id_fkey foreign key (workout_id) references workouts (id) on delete cascade
+  ) tablespace pg_default;
+
+Workout_sessions table starts and stops new sessions and is attached to the logs that records the data from each workout session
+
+create table
+  public.workout_sessions (
+    id uuid not null default uuid_generate_v4 (),
+    user_id uuid not null,
+    workout_id integer not null,
+    started_at timestamp without time zone not null,
+    completed_at timestamp without time zone null,
+    current_exercise_index integer not null default 0,
+    current_set integer not null default 1,
+    constraint workout_sessions_pkey primary key (id),
+    constraint workout_sessions_user_id_fkey foreign key (user_id) references auth.users (id),
+    constraint workout_sessions_workout_id_fkey foreign key (workout_id) references workouts (id)
+  ) tablespace pg_default;
+
+  workout_logs table stores the data from each workout session. It should be used to show the users "last workout" during a workout session, or to show their workout data over time. 
+
+  create table
+  public.workout_logs (
+    id uuid not null default uuid_generate_v4 (),
+    workout_id integer not null,
+    user_id uuid not null,
+    exercise_id integer not null,
+    set_number integer not null,
+    reps_completed integer null,
+    weight_completed numeric(10, 2) null,
+    rpe integer null,
+    started_at timestamp without time zone not null,
+    completed_at timestamp without time zone null,
+    workout_session_id uuid null,
+    constraint workout_logs_pkey primary key (id),
+    constraint workout_logs_exercise_id_fkey foreign key (exercise_id) references exercises (id),
+    constraint workout_logs_user_id_fkey foreign key (user_id) references auth.users (id),
+    constraint workout_logs_workout_id_fkey foreign key (workout_id) references workouts (id),
+    constraint workout_logs_workout_session_id_fkey foreign key (workout_session_id) references workout_sessions (id)
+  ) tablespace pg_default;
+
+
+write a component that creates a workout session using these tables. This is for a nextjs project that uses supabase and tailwind css. There are shad/cn components located in '@/components/ui/component-name
+
+the supabase clients for server components are located in '@/utils/supabase/server' and it's exported as createClient function
+
+to get a users data use 
+
+const supabase = createClient()
+
+const user = supabase.auth.getUser()
+
+the supabase clients for client components are located in '@/utils/supabase/client' and it's exported as createClient as well, but can only be used in client components marked 'use client; at the top of the component. 
+
+shadcn components located in '@/components/ui/***copmonent name***'
+
+AccordionAlertAlert DialogAspect RatioAvatarBadgeBreadcrumbNewButtonCalendarCardCarouselCheckboxCollapsibleComboboxCommandContext MenuData TableDate PickerDialogDrawerDropdown MenuFormHover CardInputInput OTPNewLabelMenubarNavigation MenuPaginationPopoverProgressRadio GroupResizableScroll AreaSelectSeparatorSheetSkeletonSliderSonnerSwitchTableTabsTextareaToastToggleToggle GroupTooltip
+
+
+'use client'
+
+import { useEffect, useState } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { useToast } from '@/components/ui/use-toast'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import WorkoutSelector from './WorkoutSelector'
+import ExerciseList from './ExerciseList'
+import FinishWorkoutButton from './FinishWorkoutButton'
+import RestTimer from './RestTimer'
+
+const WorkoutSession = () => {
+  const [workouts, setWorkouts] = useState([])
+  const [exercises, setExercises] = useState([])
+  const [workoutExercises, setWorkoutExercises] = useState([])
+  const [selectedWorkoutId, setSelectedWorkoutId] = useState(null)
+  const [currentWorkoutSession, setCurrentWorkoutSession] = useState(null)
+  const [previousWorkoutLogs, setPreviousWorkoutLogs] = useState([])
+  const [timeRemaining, setTimeRemaining] = useState(0)
+  const { toast } = useToast()
+
+  const supabase = createClient()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: userData, error: userError } = await supabase.auth.getUser()
+      if (userError || !userData.user) {
+        console.error('User authentication error:', userError)
+        toast({ title: 'User not authenticated', variant: 'destructive' })
+        return
+      }
+
+      // Fetch workouts data
+      const { data: workoutsData, error: workoutsError } = await supabase
+        .from('workouts')
+        .select('*')
+        .eq('user_id', userData.user.id)
+      if (workoutsError) {
+        console.error('Error fetching workouts:', workoutsError)
+        toast({
+          title: 'Error fetching workouts',
+          description: workoutsError.message,
+          variant: 'destructive',
+        })
+      } else {
+        setWorkouts(workoutsData)
+      }
+
+      // Fetch exercises data
+      const { data: exercisesData, error: exercisesError } = await supabase
+        .from('exercises')
+        .select('*')
+        .eq('user_id', userData.user.id)
+      if (exercisesError) {
+        console.error('Error fetching exercises:', exercisesError)
+        toast({
+          title: 'Error fetching exercises',
+          description: exercisesError.message,
+          variant: 'destructive',
+        })
+      } else {
+        setExercises(exercisesData)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    const fetchWorkoutExercises = async (workoutId) => {
+      if (!workoutId) return
+
+      const { data: workoutExercisesData, error: workoutExercisesError } =
+        await supabase
+          .from('workout_exercises')
+          .select('*, exercises(name)')
+          .eq('workout_id', workoutId)
+
+      if (workoutExercisesError) {
+        console.error(
+          'Error fetching workout exercises:',
+          workoutExercisesError,
+        )
+        toast({
+          title: 'Error fetching workout exercises',
+          description: workoutExercisesError.message,
+          variant: 'destructive',
+        })
+        return
+      }
+
+      setWorkoutExercises(workoutExercisesData)
+    }
+
+    fetchWorkoutExercises(selectedWorkoutId)
+  }, [selectedWorkoutId, currentWorkoutSession, supabase, toast])
+
+  useEffect(() => {
+    const fetchPreviousWorkoutLogs = async () => {
+      if (!selectedWorkoutId) return
+
+      const { data: previousLogsData, error: previousLogsError } =
+        await supabase
+          .from('workout_logs')
+          .select('*')
+          .eq('workout_id', selectedWorkoutId)
+          .order('started_at', { ascending: false })
+          .limit(1)
+
+      if (previousLogsError) {
+        console.error(
+          'Error fetching previous workout logs:',
+          previousLogsError,
+        )
+        toast({
+          title: 'Error fetching previous workout logs',
+          description: previousLogsError.message,
+          variant: 'destructive',
+        })
+        return
+      }
+
+      setPreviousWorkoutLogs(previousLogsData)
+    }
+
+    fetchPreviousWorkoutLogs()
+  }, [selectedWorkoutId, supabase, toast])
+
+  const startOrContinueWorkout = async () => {
+    console.log('Start Workout button clicked.')
+
+    const { data: userData, error: userError } = await supabase.auth.getUser()
+    console.log('Auth attempt:', { userData, userError })
+
+    if (userError || !userData.user) {
+      console.log('User authentication failed:', userError)
+      toast({ title: 'User not authenticated', variant: 'destructive' })
+      return
+    }
+
+    console.log('Authenticated user ID:', userData.user.id)
+
+    if (!selectedWorkoutId) {
+      console.log('No workout selected.')
+      toast({ title: 'No workout selected', variant: 'destructive' })
+      return
+    }
+
+    const { data: sessions, error: fetchError } = await supabase
+      .from('workout_sessions')
+      .select('*')
+      .eq('user_id', userData.user.id)
+      .eq('workout_id', selectedWorkoutId)
+      .is('completed_at', null)
+    console.log('Session fetch attempt:', { sessions, fetchError })
+
+    if (fetchError) {
+      console.log('Error fetching sessions:', fetchError)
+      toast({
+        title: 'Error fetching sessions',
+        description: fetchError.message,
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (sessions && sessions.length > 0) {
+      console.log('Existing session found:', sessions[0])
+      setCurrentWorkoutSession(sessions[0])
+      toast({ title: 'Continuing existing session', variant: 'success' })
+    } else {
+      console.log('No existing session found, creating a new one.')
+
+      const { data: createdSessions, error: creationError } = await supabase
+        .from('workout_sessions')
+        .insert({
+          user_id: userData.user.id,
+          workout_id: selectedWorkoutId,
+          started_at: new Date().toISOString(),
+        })
+        .select()
+      console.log('Session creation attempt:', {
+        createdSessions,
+        creationError,
+      })
+
+      if (creationError || !createdSessions || createdSessions.length === 0) {
+        console.log('Error creating new session:', creationError)
+        toast({
+          title: 'Error creating session',
+          description:
+            creationError?.message || 'Unknown error creating session',
+          variant: 'destructive',
+        })
+      } else {
+        console.log('New session created successfully:', createdSessions[0])
+        setCurrentWorkoutSession(createdSessions[0])
+        toast({ title: 'New workout session started', variant: 'success' })
+      }
+    }
+  }
+
+  const finishWorkout = async () => {
+    const { error } = await supabase
+      .from('workout_sessions')
+      .update({ completed_at: new Date().toISOString() })
+      .eq('id', currentWorkoutSession.id)
+
+    if (error) {
+      console.error('Error completing workout session:', error)
+      toast({
+        title: 'Error completing workout session',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } else {
+      setCurrentWorkoutSession(null)
+      setSelectedWorkoutId(null)
+      setWorkoutExercises([])
+      toast({
+        title: 'Workout completed',
+        description: 'Great job! You finished your workout session.',
+        variant: 'success',
+      })
+    }
+  }
+
+  const handleWorkoutSelectionChange = (value) => {
+    setSelectedWorkoutId(value)
+  }
+
+  return (
+    <div className="container mx-auto max-w-6xl">
+      <h1 className="mb-4 text-3xl font-bold">Workout Session</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="mb-2 text-2xl font-bold">
+            Select a Workout
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WorkoutSelector
+            workouts={workouts}
+            selectedWorkoutId={selectedWorkoutId}
+            onWorkoutSelectionChange={handleWorkoutSelectionChange}
+            onStartWorkout={startOrContinueWorkout}
+            currentWorkoutSession={currentWorkoutSession}
+          />
+        </CardContent>
+      </Card>
+
+      {currentWorkoutSession && (
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="mb-2 text-2xl font-bold">
+              {workouts.find((workout) => workout.id === selectedWorkoutId)
+                ?.name || ''}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ExerciseList
+              workoutExercises={workoutExercises}
+              previousWorkoutLogs={previousWorkoutLogs}
+              currentWorkoutSession={currentWorkoutSession}
+              setTimeRemaining={setTimeRemaining}
+              setWorkoutExercises={setWorkoutExercises}
+            />
+            <div className="mt-8 flex items-center justify-between">
+              <FinishWorkoutButton onFinishWorkout={finishWorkout} />
+              <RestTimer
+                timeRemaining={timeRemaining}
+                setTimeRemaining={setTimeRemaining}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
+
+export default WorkoutSession
+
+'use client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { useState } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { useToast } from '@/components/ui/use-toast'
+
+const ExerciseList = ({
+  workoutExercises,
+  previousWorkoutLogs,
+  currentWorkoutSession,
+  setTimeRemaining,
+  setWorkoutExercises,
+}) => {
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
+  const [currentSet, setCurrentSet] = useState(1)
+  const { toast } = useToast()
+
+  const supabase = createClient()
+
+  const logSet = async (exerciseId, setNumber, reps, weight, rpe) => {
+    if (!currentWorkoutSession) {
+      console.error('No current workout session set.')
+      toast({
+        title: 'Workout session not started',
+        description: 'Please start a workout session before logging sets.',
+        variant: 'destructive',
+      })
+      return
+    }
+    if (!reps || !weight || !rpe) {
+      toast({
+        title: 'Missing data',
+        description: 'Please enter reps, weight, and RPE values.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const user = await supabase.auth.getUser()
+    const { error } = await supabase.from('workout_logs').insert([
+      {
+        workout_id: currentWorkoutSession.workout_id,
+        user_id: user.data.user.id,
+        exercise_id: exerciseId,
+        set_number: setNumber,
+        reps_completed: parseInt(reps),
+        weight_completed: parseFloat(weight),
+        rpe: parseInt(rpe),
+        started_at: new Date().toISOString(),
+        workout_session_id: currentWorkoutSession.id,
+      },
+    ])
+
+    if (error) {
+      console.error('Error logging set:', error)
+      toast({
+        title: 'Error logging set',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } else {
+      // Reset the timer based on the rest_timer_duration from workout_exercises
+      const restTimerDuration =
+        workoutExercises[currentExerciseIndex].rest_timer_duration || 0
+      setTimeRemaining(restTimerDuration)
+
+      if (setNumber === workoutExercises[currentExerciseIndex].sets) {
+        if (currentExerciseIndex === workoutExercises.length - 1) {
+          // Workout completed
+          setTimeRemaining(0)
+          toast({
+            title: 'Workout completed',
+            description: 'Great job! You finished your workout session.',
+            variant: 'success',
+          })
+        } else {
+          setCurrentExerciseIndex(currentExerciseIndex + 1)
+          setCurrentSet(1)
+          toast({
+            title: 'Next exercise',
+            description: 'Moving on to the next exercise.',
+            variant: 'success',
+          })
+        }
+      } else {
+        setCurrentSet(setNumber + 1)
+        toast({
+          title: 'Next set',
+          description: 'Moving on to the next set.',
+          variant: 'success',
+        })
+      }
+    }
+  }
+
+  const addSet = async (exerciseId) => {
+    const { data, error } = await supabase
+      .from('workout_exercises')
+      .update({
+        sets:
+          workoutExercises.find((e) => e.exercise_id === exerciseId).sets + 1,
+      })
+      .eq('exercise_id', exerciseId)
+      .eq('workout_id', currentWorkoutSession.workout_id)
+      .single()
+
+    if (error) {
+      console.error('Error adding set:', error)
+      toast({
+        title: 'Error adding set',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } else {
+      setWorkoutExercises((prevExercises) =>
+        prevExercises.map((exercise) =>
+          exercise.exercise_id === exerciseId ? data : exercise,
+        ),
+      )
+      toast({
+        title: 'Set added',
+        description: 'A new set has been added to the exercise.',
+        variant: 'success',
+      })
+    }
+  }
+
+  const removeSet = async (exerciseId) => {
+    const currentSets = workoutExercises.find(
+      (e) => e.exercise_id === exerciseId,
+    ).sets
+    if (currentSets <= 1) {
+      toast({
+        title: 'Cannot remove set',
+        description: 'There must be at least one set for each exercise.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('workout_exercises')
+      .update({ sets: currentSets - 1 })
+      .eq('exercise_id', exerciseId)
+      .eq('workout_id', currentWorkoutSession.workout_id)
+      .single()
+
+    if (error) {
+      console.error('Error removing set:', error)
+      toast({
+        title: 'Error removing set',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } else {
+      setWorkoutExercises((prevExercises) =>
+        prevExercises.map((exercise) =>
+          exercise.exercise_id === exerciseId ? data : exercise,
+        ),
+      )
+      toast({
+        title: 'Set removed',
+        description: 'A set has been removed from the exercise.',
+        variant: 'success',
+      })
+    }
+  }
+
+  return (
+    <>
+      {workoutExercises.map((exercise, exerciseIndex) => (
+        <div key={exercise.id} className="mb-8">
+          <h3 className="mb-4 text-xl font-bold">{exercise.exercises.name}</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Set</TableHead>
+                <TableHead>Reps</TableHead>
+                <TableHead>Weight</TableHead>
+                <TableHead>RPE</TableHead>
+                <TableHead>Last Session</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: exercise.sets }, (_, setIndex) => {
+                const prevLog = previousWorkoutLogs.find(
+                  (log) =>
+                    log.exercise_id === exercise.exercise_id &&
+                    log.set_number === setIndex + 1,
+                )
+
+                return (
+                  <TableRow key={`${exercise.id}-${setIndex}`}>
+                    <TableCell>{setIndex + 1}</TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        placeholder={prevLog?.reps_completed || 'Reps'}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        placeholder={prevLog?.weight_completed || 'Weight'}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        placeholder={prevLog?.rpe || 'RPE'}
+                      />
+                    </TableCell>
+                    <TableCell>{prevLog?.weight_completed || '-'}</TableCell>
+                    <TableCell>
+                      <Button
+                        onClick={() =>
+                          logSet(
+                            exercise.exercise_id,
+                            setIndex + 1,
+                            reps,
+                            weight,
+                            rpe,
+                          )
+                        }
+                      >
+                        Log Set
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+          <div className="mt-4 flex justify-end">
+            <Button onClick={() => addSet(exercise.exercise_id)}>
+              Add Set
+            </Button>
+            <Button
+              className="ml-2"
+              onClick={() => removeSet(exercise.exercise_id)}
+            >
+              Remove Set
+            </Button>
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
+
+export default ExerciseList
+
+import { Button } from '@/components/ui/button'
+
+const FinishWorkoutButton = ({ onFinishWorkout }) => {
+  return (
+    <Button
+      onClick={onFinishWorkout}
+      className="rounded bg-blue-500 px-4 py-2 text-white"
+    >
+      Finish Workout
+    </Button>
+  )
+}
+
+export default FinishWorkoutButton
+
+// WorkoutSelector.jsx
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const WorkoutSelector = ({
+  workouts,
+  selectedWorkoutId,
+  onWorkoutSelectionChange,
+  onStartWorkout,
+  currentWorkoutSession,
+}) => {
+  return (
+    <>
+      <Select onValueChange={onWorkoutSelectionChange}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select a workout" />
+        </SelectTrigger>
+        <SelectContent>
+          {workouts.map((workout) => (
+            <SelectItem key={workout.id} value={workout.id}>
+              {workout.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {selectedWorkoutId && !currentWorkoutSession && (
+        <Button className="mt-4" onClick={onStartWorkout}>
+          Start Workout
+        </Button>
+      )}
+    </>
+  )
+}
+
+export default WorkoutSelector

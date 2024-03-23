@@ -1,4 +1,3 @@
-// WorkoutTrackerClient.jsx
 'use client'
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
@@ -37,6 +36,26 @@ const WorkoutTrackerClient = ({ exercises, workouts: initialWorkouts }) => {
 
     fetchUser()
   }, [])
+
+  useEffect(() => {
+    const fetchWorkoutExercises = async () => {
+      if (currentWorkout) {
+        const { data, error } = await supabase
+          .from('workout_exercises')
+          .select('*, exercise:exercises(*)')
+          .eq('workout_id', currentWorkout.id)
+          .order('order', { ascending: true })
+
+        if (error) {
+          console.error('Error fetching workout exercises:', error)
+        } else {
+          setWorkoutExercises(data)
+        }
+      }
+    }
+
+    fetchWorkoutExercises()
+  }, [currentWorkout])
 
   const handleCreateWorkout = async () => {
     if (newWorkoutName && user) {
@@ -82,7 +101,7 @@ const WorkoutTrackerClient = ({ exercises, workouts: initialWorkouts }) => {
         }
       }
     } else {
-      console.log('User is not authenticated or workout name is empty')
+     
       // Handle the case when user is null or workout name is empty
       // ...
     }
@@ -151,67 +170,6 @@ const WorkoutTrackerClient = ({ exercises, workouts: initialWorkouts }) => {
     }
   }
 
-  const handleAddExercise = async (exercise) => {
-    if (currentWorkout) {
-      const { data, error } = await supabase
-        .from('workout_exercises')
-        .insert([exercise])
-        .select('*, exercise:exercises(*)')
-        .single()
-
-      if (error) {
-        console.error('Error adding exercise:', error)
-        toast({
-          variant: 'destructive',
-          title: <ToastTitle>Error</ToastTitle>,
-          description: (
-            <ToastDescription>Failed to add exercise.</ToastDescription>
-          ),
-          action: <ToastClose />,
-        })
-      } else {
-        setWorkoutExercises([...workoutExercises, data])
-        toast({
-          title: <ToastTitle>Success</ToastTitle>,
-          description: (
-            <ToastDescription>Exercise added successfully.</ToastDescription>
-          ),
-          action: <ToastClose />,
-        })
-      }
-    }
-  }
-
-  const handleRemoveExercise = async (exerciseId) => {
-    if (currentWorkout) {
-      const { error } = await supabase
-        .from('workout_exercises')
-        .delete()
-        .eq('id', exerciseId)
-
-      if (error) {
-        console.error('Error removing exercise:', error)
-        toast({
-          variant: 'destructive',
-          title: <ToastTitle>Error</ToastTitle>,
-          description: (
-            <ToastDescription>Failed to remove exercise.</ToastDescription>
-          ),
-          action: <ToastClose />,
-        })
-      } else {
-        setWorkoutExercises(workoutExercises.filter((e) => e.id !== exerciseId))
-        toast({
-          title: <ToastTitle>Success</ToastTitle>,
-          description: (
-            <ToastDescription>Exercise removed successfully.</ToastDescription>
-          ),
-          action: <ToastClose />,
-        })
-      }
-    }
-  }
-
   return (
     <ToastProvider>
       <div className="container mx-auto max-w-6xl py-8">
@@ -240,7 +198,7 @@ const WorkoutTrackerClient = ({ exercises, workouts: initialWorkouts }) => {
               <Button
                 disabled={!currentWorkout || workoutExercises.length === 0}
               >
-                Start Workout
+                Start Workout Session
               </Button>
             </Link>
           </div>
@@ -249,7 +207,7 @@ const WorkoutTrackerClient = ({ exercises, workouts: initialWorkouts }) => {
         <WorkoutSelector
           workouts={workouts}
           currentWorkout={currentWorkout}
-          setCurrentWorkout={setCurrentWorkout}
+          setCurrentWorkout={(workout) => setCurrentWorkout(workout)}
           handleDeleteWorkout={handleDeleteWorkout}
           handleUpdateWorkout={handleUpdateWorkout}
         />
