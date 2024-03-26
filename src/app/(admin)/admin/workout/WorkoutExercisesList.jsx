@@ -94,8 +94,9 @@ const WorkoutExercisesList = ({ workoutExercises, setWorkoutExercises }) => {
                     <div className="flex items-center gap-2">
                       <span>
                         {workoutExercise.exercise.name} - Sets:{' '}
-                        {workoutExercise.sets}, Reps: {workoutExercise.reps},
-                        Weight: {workoutExercise.weight} lbs, Rest Timer:{' '}
+                        {workoutExercise.sets}, Reps: {workoutExercise.min_reps}
+                        -{workoutExercise.max_reps}, Weight:{' '}
+                        {workoutExercise.weight} lbs, Rest Timer:{' '}
                         {workoutExercise.rest_timer_duration} seconds
                       </span>
                     </div>

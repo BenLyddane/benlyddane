@@ -1,100 +1,127 @@
+import { useState, useEffect } from 'react'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { AiTwotoneLock } from 'react-icons/ai'
-import RecommendedWorkoutData from './RecommendedWorkoutData'
-import PreviousWorkoutsData from './PreviousWorkoutsData'
+import { useToast } from '@/components/ui/use-toast'
+import {
+  logOrUpdateSetToDatabase,
+  checkExistingLog,
+} from '../_functions/LogSetToDatabase'
+import PreviousWorkoutsDisplay from './PreviousWorkoutsDisplay'
+import RecommendedWeightRepsRPEDisplay from './RecommendedWeightRepsRPEDisplay'
+import { AiOutlineLock, AiOutlineUnlock } from 'react-icons/ai'
 
 const ExerciseTableRow = ({
   workoutExercise,
   setNumber,
   currentWorkoutSession,
-  isSetLogged,
   handleInputChange,
-  logSet,
   inputValues,
-  previousWorkoutLogs,
+  recommendedSets,
 }) => {
-  const prevLog = previousWorkoutLogs.find(
-    (log) =>
-      log.exercise_id === workoutExercise.exercise_id &&
-      log.set_number === setNumber,
-  )
+  const [isLoading, setIsLoading] = useState(false)
+  const [isLocked, setIsLocked] = useState(false)
+  const { toast } = useToast()
+  const [loggedSetData, setLoggedSetData] = useState(null)
 
-  const recommendedData = RecommendedWorkoutData({
-    workoutExerciseId: workoutExercise.exercise_id,
-    setNumber,
-    userId: currentWorkoutSession.user_id,
-  })
+  useEffect(() => {
+    const fetchLoggedSetData = async () => {
+      const loggedSet = await checkExistingLog({
+        workoutId: currentWorkoutSession.workout_id,
+        userId: currentWorkoutSession.user_id,
+        exerciseId: workoutExercise.exercise_id,
+        workoutExerciseId: workoutExercise.id,
+        setNumber,
+        workoutSessionId: currentWorkoutSession.id,
+      })
+      setLoggedSetData(loggedSet)
+      setIsLocked(!!loggedSet) // Lock the row if a set is already logged
+    }
 
-  const previousWorkoutsData = PreviousWorkoutsData({
-    workoutExerciseId: workoutExercise.id,
+    fetchLoggedSetData()
+  }, [
+    currentWorkoutSession.workout_id,
+    currentWorkoutSession.user_id,
+    workoutExercise.exercise_id,
+    workoutExercise.id,
     setNumber,
-    userId: currentWorkoutSession.user_id,
-  })
+    currentWorkoutSession.id,
+  ])
+
+  const logSet = async () => {
+    setIsLoading(true)
+    const { error } = await logOrUpdateSetToDatabase({
+      workoutId: currentWorkoutSession.workout_id,
+      userId: currentWorkoutSession.user_id,
+      exerciseId: workoutExercise.exercise_id,
+      workoutExerciseId: workoutExercise.id,
+      setNumber,
+      reps: inputValues[`${workoutExercise.id}-${setNumber}-repetitions`],
+      weight: inputValues[`${workoutExercise.id}-${setNumber}-weight`],
+      rpe: inputValues[`${workoutExercise.id}-${setNumber}-rpe`],
+      workoutSessionId: currentWorkoutSession.id,
+      toast,
+    })
+    setIsLoading(false)
+    if (!error) {
+      setIsLocked(true) // Lock the row after successful logging
+    }
+  }
+
+  const toggleLock = () => {
+    setIsLocked(!isLocked)
+  }
 
   return (
     <TableRow>
       <TableCell>{setNumber}</TableCell>
       <TableCell>
-        <div className="mb-2">
-          <span className="font-bold">Previous Workout: </span>
-          {prevLog ? (
-            <span>{prevLog.reps_completed} reps</span>
-          ) : (
-            <span className="text-gray-500">
-              {previousWorkoutsData.length > 0
-                ? previousWorkoutsData.slice(0, 2).map((log, index) => (
-                    <div key={index}>
-                      <span className="font-bold">Workout {index + 1}: </span>
-                      {log.reps_completed} reps
-                    </div>
-                  ))
-                : 'No previous data'}
-            </span>
-          )}
+        <div className="flex items-center space-x-2">
           <Input
             type="number"
-            value={inputValues[`${workoutExercise.id}-${setNumber}-reps`] || ''}
+            placeholder="0"
+            min={workoutExercise.min_reps}
+            max={workoutExercise.max_reps}
+            value={
+              isLocked && loggedSetData
+                ? loggedSetData.reps_completed || ''
+                : inputValues[
+                    `${workoutExercise.id}-${setNumber}-repetitions`
+                  ] || ''
+            }
             onChange={(e) =>
               handleInputChange(
                 workoutExercise.id,
                 setNumber,
-                'reps',
+                'repetitions',
                 e.target.value,
               )
             }
-            disabled={isSetLogged}
+            disabled={isLocked}
           />
-          {recommendedData && (
-            <div className="mt-2">
-              <span className="font-bold">Recommended Reps: </span>
-              {recommendedData.reps}
-            </div>
-          )}
+          <PreviousWorkoutsDisplay
+            workoutExerciseId={workoutExercise.id}
+            setNumber={setNumber}
+            userId={currentWorkoutSession.user_id}
+            field="reps"
+          />
         </div>
+        <RecommendedWeightRepsRPEDisplay
+          workoutExercise={workoutExercise}
+          setNumber={setNumber}
+          userId={currentWorkoutSession.user_id}
+          field="reps"
+        />
       </TableCell>
       <TableCell>
-        <div className="mb-2">
-          <span className="font-bold">Previous Workout: </span>
-          {prevLog ? (
-            <span>{prevLog.weight_completed} lbs</span>
-          ) : (
-            <span className="text-gray-500">
-              {previousWorkoutsData.length > 0
-                ? previousWorkoutsData.slice(0, 2).map((log, index) => (
-                    <div key={index}>
-                      <span className="font-bold">Workout {index + 1}: </span>
-                      {log.weight_completed} lbs
-                    </div>
-                  ))
-                : 'No previous data'}
-            </span>
-          )}
+        <div className="flex items-center space-x-2">
           <Input
             type="number"
+            placeholder="0"
             value={
-              inputValues[`${workoutExercise.id}-${setNumber}-weight`] || ''
+              isLocked && loggedSetData
+                ? loggedSetData.weight_completed || ''
+                : inputValues[`${workoutExercise.id}-${setNumber}-weight`] || ''
             }
             onChange={(e) =>
               handleInputChange(
@@ -104,36 +131,34 @@ const ExerciseTableRow = ({
                 e.target.value,
               )
             }
-            disabled={isSetLogged}
+            disabled={isLocked}
           />
-          {recommendedData && (
-            <div className="mt-2">
-              <span className="font-bold">Recommended Weight: </span>
-              {recommendedData.weight} lbs
-            </div>
-          )}
+          <PreviousWorkoutsDisplay
+            workoutExerciseId={workoutExercise.id}
+            setNumber={setNumber}
+            userId={currentWorkoutSession.user_id}
+            field="weight"
+          />
         </div>
+        <RecommendedWeightRepsRPEDisplay
+          workoutExercise={workoutExercise}
+          setNumber={setNumber}
+          userId={currentWorkoutSession.user_id}
+          field="weight"
+        />
       </TableCell>
       <TableCell>
-        <div className="mb-2">
-          <span className="font-bold">Previous Workout: </span>
-          {prevLog ? (
-            <span>RPE {prevLog.rpe}</span>
-          ) : (
-            <span className="text-gray-500">
-              {previousWorkoutsData.length > 0
-                ? previousWorkoutsData.slice(0, 2).map((log, index) => (
-                    <div key={index}>
-                      <span className="font-bold">Workout {index + 1}: </span>
-                      RPE {log.rpe}
-                    </div>
-                  ))
-                : 'No previous data'}
-            </span>
-          )}
+        <div className="flex items-center space-x-2">
           <Input
             type="number"
-            value={inputValues[`${workoutExercise.id}-${setNumber}-rpe`] || ''}
+            placeholder="0"
+            min={1}
+            max={10}
+            value={
+              isLocked && loggedSetData
+                ? loggedSetData.rpe || ''
+                : inputValues[`${workoutExercise.id}-${setNumber}-rpe`] || ''
+            }
             onChange={(e) =>
               handleInputChange(
                 workoutExercise.id,
@@ -142,28 +167,30 @@ const ExerciseTableRow = ({
                 e.target.value,
               )
             }
-            disabled={isSetLogged}
+            disabled={isLocked}
           />
-          {recommendedData && (
-            <div className="mt-2">
-              <span className="font-bold">Recommended RPE: </span>
-              {recommendedData.rpe}
-            </div>
-          )}
+          <PreviousWorkoutsDisplay
+            workoutExerciseId={workoutExercise.id}
+            setNumber={setNumber}
+            userId={currentWorkoutSession.user_id}
+            field="rpe"
+          />
         </div>
+        <RecommendedWeightRepsRPEDisplay
+          workoutExercise={workoutExercise}
+          setNumber={setNumber}
+          userId={currentWorkoutSession.user_id}
+          field="rpe"
+        />
       </TableCell>
       <TableCell>
-        <Button
-          onClick={() => logSet(workoutExercise.id, setNumber)}
-          disabled={isSetLogged}
-        >
-          {isSetLogged ? (
-            <>
-              <AiTwotoneLock className="mr-2 h-4 w-4" /> Logged
-            </>
-          ) : (
-            'Log Set'
-          )}
+        <Button onClick={logSet} disabled={isLocked || isLoading}>
+          {isLocked ? 'Logged' : 'Log Set'}
+        </Button>
+      </TableCell>
+      <TableCell>
+        <Button variant="ghost" onClick={toggleLock} disabled={isLoading}>
+          {isLocked ? <AiOutlineUnlock /> : <AiOutlineLock />}
         </Button>
       </TableCell>
     </TableRow>

@@ -1,6 +1,6 @@
 You are working on a Next JS app router project that uses supabase, tailwind css, and the ShadCN components library. Here is a view of the application. 
 
-Table Definitions for Workouts:
+Table Definitions for Workout Tracking Application:
 
 Exercises holds a database of exercises the user can choose from when building workouts. 
 create table
@@ -14,8 +14,7 @@ create table
   ) tablespace pg_default;
 
   Workouts holds the users workout templates they have created, they can run these workouts using sessions
-
-  create table
+create table
   public.workouts (
     id serial,
     name character varying(255) not null,
@@ -24,23 +23,23 @@ create table
     constraint workouts_pkey primary key (id),
     constraint workouts_user_id_fkey foreign key (user_id) references auth.users (id)
   ) tablespace pg_default;
-
   workout_exercises table holds the exercises they assigned to that workout and the weights/reps that are there current target
 
-  create table
+create table
   public.workout_exercises (
     id serial,
     workout_id integer null,
     exercise_id integer null,
     sets integer not null,
-    reps integer not null,
     weight numeric(10, 2) not null,
     rest_timer_duration integer null,
+    "order" integer not null default 0,
+    min_reps integer not null default 0,
+    max_reps integer not null default 0,
     constraint workout_exercises_pkey primary key (id),
     constraint workout_exercises_exercise_id_fkey foreign key (exercise_id) references exercises (id) on delete cascade,
     constraint workout_exercises_workout_id_fkey foreign key (workout_id) references workouts (id) on delete cascade
   ) tablespace pg_default;
-
 Workout_sessions table starts and stops new sessions and is attached to the logs that records the data from each workout session
 
 create table
@@ -54,12 +53,10 @@ create table
     current_set integer not null default 1,
     constraint workout_sessions_pkey primary key (id),
     constraint workout_sessions_user_id_fkey foreign key (user_id) references auth.users (id),
-    constraint workout_sessions_workout_id_fkey foreign key (workout_id) references workouts (id)
+    constraint workout_sessions_workout_id_fkey foreign key (workout_id) references workouts (id) on delete cascade
   ) tablespace pg_default;
-
   workout_logs table stores the data from each workout session. It should be used to show the users "last workout" during a workout session, or to show their workout data over time. 
-
-  create table
+create table
   public.workout_logs (
     id uuid not null default uuid_generate_v4 (),
     workout_id integer not null,
@@ -72,14 +69,14 @@ create table
     started_at timestamp without time zone not null,
     completed_at timestamp without time zone null,
     workout_session_id uuid null,
+    workout_exercise_id integer null,
     constraint workout_logs_pkey primary key (id),
     constraint workout_logs_exercise_id_fkey foreign key (exercise_id) references exercises (id),
     constraint workout_logs_user_id_fkey foreign key (user_id) references auth.users (id),
-    constraint workout_logs_workout_id_fkey foreign key (workout_id) references workouts (id),
+    constraint workout_logs_workout_exercise_id_fkey foreign key (workout_exercise_id) references workout_exercises (id) on delete cascade,
+    constraint workout_logs_workout_id_fkey foreign key (workout_id) references workouts (id) on delete cascade,
     constraint workout_logs_workout_session_id_fkey foreign key (workout_session_id) references workout_sessions (id)
   ) tablespace pg_default;
-
-
 write a component that creates a workout session using these tables. This is for a nextjs project that uses supabase and tailwind css. There are shad/cn components located in '@/components/ui/component-name
 
 the supabase clients for server components are located in '@/utils/supabase/server' and it's exported as createClient function

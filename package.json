@@ -10,8 +10,7 @@
   },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
-    "@capacitor/cli": "^5.7.4",
-    "@capacitor/core": "^5.7.4",
+    "@capacitor/android": "^5.7.4",
     "@headlessui/react": "^1.7.13",
     "@hookform/resolvers": "^3.3.4",
     "@mailchimp/mailchimp_marketing": "^3.0.80",

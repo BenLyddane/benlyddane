@@ -5,7 +5,6 @@ import remarkGfm from 'remark-gfm'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
   webpack: (config, options) => {
     config.module.rules.push({

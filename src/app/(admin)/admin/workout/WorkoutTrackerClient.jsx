@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import ExerciseSearch from './ExerciseSearch'
+import { handleDeleteWorkout } from './HandleDeleteWorkout'
 import WorkoutSelector from './WorkoutSelector'
 import AddExercise from './AddExercise'
 import WorkoutExercisesList from './WorkoutExercisesList'
@@ -101,41 +102,8 @@ const WorkoutTrackerClient = ({ exercises, workouts: initialWorkouts }) => {
         }
       }
     } else {
-     
       // Handle the case when user is null or workout name is empty
       // ...
-    }
-  }
-
-  const handleDeleteWorkout = async (workoutId) => {
-    if (workoutId) {
-      const { error } = await supabase
-        .from('workouts')
-        .delete()
-        .eq('id', workoutId)
-
-      if (error) {
-        console.error('Error deleting workout:', error)
-        toast({
-          variant: 'destructive',
-          title: <ToastTitle>Error</ToastTitle>,
-          description: (
-            <ToastDescription>Failed to delete workout.</ToastDescription>
-          ),
-          action: <ToastClose />,
-        })
-      } else {
-        setCurrentWorkout(null)
-        setWorkoutExercises([])
-        setWorkouts(workouts.filter((w) => w.id !== workoutId))
-        toast({
-          title: <ToastTitle>Success</ToastTitle>,
-          description: (
-            <ToastDescription>Workout deleted successfully.</ToastDescription>
-          ),
-          action: <ToastClose />,
-        })
-      }
     }
   }
 
@@ -195,11 +163,7 @@ const WorkoutTrackerClient = ({ exercises, workouts: initialWorkouts }) => {
           </div>
           <div>
             <Link href="/admin/workout/workout-session">
-              <Button
-                disabled={!currentWorkout || workoutExercises.length === 0}
-              >
-                Start Workout Session
-              </Button>
+              <Button>Start Workout Session</Button>
             </Link>
           </div>
         </div>
@@ -208,7 +172,16 @@ const WorkoutTrackerClient = ({ exercises, workouts: initialWorkouts }) => {
           workouts={workouts}
           currentWorkout={currentWorkout}
           setCurrentWorkout={(workout) => setCurrentWorkout(workout)}
-          handleDeleteWorkout={handleDeleteWorkout}
+          handleDeleteWorkout={(workoutId) =>
+            handleDeleteWorkout(
+              workoutId,
+              setCurrentWorkout,
+              setWorkoutExercises,
+              setWorkouts,
+              workouts,
+              toast,
+            )
+          }
           handleUpdateWorkout={handleUpdateWorkout}
         />
 

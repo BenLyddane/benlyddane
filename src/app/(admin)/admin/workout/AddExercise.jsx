@@ -38,7 +38,8 @@ const AddExercise = ({
   const [selectedExercise, setSelectedExercise] = useState(null)
   const [exercises, setExercises] = useState([])
   const [sets, setSets] = useState('')
-  const [reps, setReps] = useState('')
+  const [minReps, setMinReps] = useState('')
+  const [maxReps, setMaxReps] = useState('')
   const [weight, setWeight] = useState('')
   const [restTimerDuration, setRestTimerDuration] = useState('')
   const { toast } = useToast()
@@ -48,7 +49,6 @@ const AddExercise = ({
       const { data, error } = await supabase.from('exercises').select('*')
       if (!error && data) {
         setExercises(data)
-    
       } else {
         console.error('Error fetching exercises:', error)
       }
@@ -57,9 +57,14 @@ const AddExercise = ({
   }, [])
 
   const handleAddExercise = async () => {
-
-
-    if (selectedExercise && sets && reps && weight && currentWorkout) {
+    if (
+      selectedExercise &&
+      sets &&
+      minReps &&
+      maxReps &&
+      weight &&
+      currentWorkout
+    ) {
       const maxOrder = workoutExercises.reduce(
         (max, curr) => (curr.order > max ? curr.order : max),
         0,
@@ -70,7 +75,8 @@ const AddExercise = ({
         workout_id: currentWorkout.id,
         exercise_id: selectedExercise.id,
         sets: parseInt(sets),
-        reps: parseInt(reps),
+        min_reps: parseInt(minReps),
+        max_reps: parseInt(maxReps),
         weight: parseFloat(weight),
         rest_timer_duration: restTimerDuration
           ? parseInt(restTimerDuration)
@@ -78,11 +84,10 @@ const AddExercise = ({
         order: newOrder,
       }
 
-    
-
       setSelectedExercise(null)
       setSets('')
-      setReps('')
+      setMinReps('')
+      setMaxReps('')
       setWeight('')
       setRestTimerDuration('')
 
@@ -93,7 +98,6 @@ const AddExercise = ({
         .single()
 
       if (!error && data) {
-    
         setWorkoutExercises([...workoutExercises, data])
         toast({
           title: 'Success',
@@ -114,7 +118,7 @@ const AddExercise = ({
   }
 
   const isFormComplete =
-    selectedExercise && sets && reps && weight && currentWorkout
+    selectedExercise && sets && minReps && maxReps && weight && currentWorkout
 
   return (
     <Card className="mb-4">
@@ -150,28 +154,35 @@ const AddExercise = ({
               value={sets}
               onChange={(e) => setSets(e.target.value)}
               placeholder="Sets"
-              className="w-full md:w-24"
+              className="md:w-30 w-full"
             />
             <Input
               type="number"
-              value={reps}
-              onChange={(e) => setReps(e.target.value)}
-              placeholder="Reps"
-              className="w-full md:w-24"
+              value={minReps}
+              onChange={(e) => setMinReps(e.target.value)}
+              placeholder="Min Reps"
+              className="md:w-30 w-full"
+            />
+            <Input
+              type="number"
+              value={maxReps}
+              onChange={(e) => setMaxReps(e.target.value)}
+              placeholder="Max Reps"
+              className="md:w30 w-full"
             />
             <Input
               type="number"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
               placeholder="Weight (lbs)"
-              className="w-full md:w-24"
+              className="md:w-30 w-full"
             />
             <Input
               type="number"
               value={restTimerDuration}
               onChange={(e) => setRestTimerDuration(e.target.value)}
-              placeholder="Rest Timer (seconds)"
-              className="w-full md:w-32"
+              placeholder="Timer (sec)"
+              className="md:w-30 w-full"
             />
           </div>
         </div>
@@ -208,20 +219,6 @@ function ExerciseList({ exercises, setOpen, setSelectedExercise }) {
   return (
     <div className="overflow-hidden rounded-md border bg-popover p-4 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
       <div className="flex items-center border-b px-3">
-        <svg
-          className="mr-2 h-4 w-4 shrink-0 opacity-50"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
         <input
           className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Search exercise..."
@@ -233,25 +230,23 @@ function ExerciseList({ exercises, setOpen, setSelectedExercise }) {
         {filteredExercises.length === 0 ? (
           <div className="py-6 text-center text-sm">No results found.</div>
         ) : (
-          <div>
-            {filteredExercises.map((exercise) => (
-              <div
-                key={exercise.id}
-                className="relative flex cursor-default select-none items-center justify-between rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                onClick={() => {
-                  setSelectedExercise(exercise)
-                  setOpen(false)
-                }}
-              >
-                <div>
-                  <p className="font-medium">{exercise.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {exercise.body_part}
-                  </p>
-                </div>
+          filteredExercises.map((exercise) => (
+            <div
+              key={exercise.id}
+              className="flex cursor-default select-none items-center justify-between rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+              onClick={() => {
+                setSelectedExercise(exercise)
+                setOpen(false)
+              }}
+            >
+              <div>
+                <p className="font-medium">{exercise.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {exercise.body_part}
+                </p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))
         )}
       </div>
     </div>
