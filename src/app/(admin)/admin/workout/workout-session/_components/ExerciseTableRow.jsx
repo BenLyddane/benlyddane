@@ -9,7 +9,9 @@ import {
 } from '../_functions/LogSetToDatabase'
 import PreviousWorkoutsDisplay from './PreviousWorkoutsDisplay'
 import RecommendedWeightRepsRPEDisplay from './RecommendedWeightRepsRPEDisplay'
-import { AiOutlineLock, AiOutlineUnlock } from 'react-icons/ai'
+import getRecommendedWeightRepsRPE from '../_functions/RecommendedWeightRepRPE'
+import { AiOutlineCheck, AiOutlineClose } from 'react-icons/ai'
+import RestTimer from './RestTimer'
 
 const ExerciseTableRow = ({
   workoutExercise,
@@ -17,12 +19,14 @@ const ExerciseTableRow = ({
   currentWorkoutSession,
   handleInputChange,
   inputValues,
-  recommendedSets,
 }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [isLocked, setIsLocked] = useState(false)
   const { toast } = useToast()
   const [loggedSetData, setLoggedSetData] = useState(null)
+  const [startTimer, setStartTimer] = useState(false)
+  const [timerKey, setTimerKey] = useState(0)
+  const [recommendedData, setRecommendedData] = useState(null)
 
   useEffect(() => {
     const fetchLoggedSetData = async () => {
@@ -35,7 +39,8 @@ const ExerciseTableRow = ({
         workoutSessionId: currentWorkoutSession.id,
       })
       setLoggedSetData(loggedSet)
-      setIsLocked(!!loggedSet) // Lock the row if a set is already logged
+      setIsLocked(!!loggedSet)
+      setStartTimer(false)
     }
 
     fetchLoggedSetData()
@@ -48,43 +53,92 @@ const ExerciseTableRow = ({
     currentWorkoutSession.id,
   ])
 
-  const logSet = async () => {
-    setIsLoading(true)
-    const { error } = await logOrUpdateSetToDatabase({
-      workoutId: currentWorkoutSession.workout_id,
-      userId: currentWorkoutSession.user_id,
-      exerciseId: workoutExercise.exercise_id,
-      workoutExerciseId: workoutExercise.id,
-      setNumber,
-      reps: inputValues[`${workoutExercise.id}-${setNumber}-repetitions`],
-      weight: inputValues[`${workoutExercise.id}-${setNumber}-weight`],
-      rpe: inputValues[`${workoutExercise.id}-${setNumber}-rpe`],
-      workoutSessionId: currentWorkoutSession.id,
-      toast,
-    })
-    setIsLoading(false)
-    if (!error) {
-      setIsLocked(true) // Lock the row after successful logging
+  useEffect(() => {
+    const fetchRecommendedData = async () => {
+      const recommended = await getRecommendedWeightRepsRPE({
+        workoutExerciseId: workoutExercise.id,
+        userId: currentWorkoutSession.user_id,
+        setNumber,
+      })
+      setRecommendedData(recommended)
+    }
+
+    fetchRecommendedData()
+  }, [workoutExercise, currentWorkoutSession.user_id, setNumber])
+
+  const toggleLockAndLogSet = async () => {
+    const reps = inputValues[`${workoutExercise.id}-${setNumber}-repetitions`]
+    const weight = inputValues[`${workoutExercise.id}-${setNumber}-weight`]
+    const rpe = inputValues[`${workoutExercise.id}-${setNumber}-rpe`]
+
+    if (!reps || !weight || !rpe) {
+      toast({
+        title: 'Missing input',
+        description:
+          'Please complete all inputs (weight, reps, and RPE) to log the set.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (isLocked) {
+      setIsLocked(false)
+    } else {
+      setIsLoading(true)
+      const { error } = await logOrUpdateSetToDatabase({
+        workoutId: currentWorkoutSession.workout_id,
+        userId: currentWorkoutSession.user_id,
+        exerciseId: workoutExercise.exercise_id,
+        workoutExerciseId: workoutExercise.id,
+        setNumber,
+        reps,
+        weight,
+        rpe,
+        workoutSessionId: currentWorkoutSession.id,
+        toast,
+      })
+      setIsLoading(false)
+      if (!error) {
+        setIsLocked(true)
+        if (!loggedSetData) {
+          setStartTimer(true)
+          setTimerKey((prevKey) => prevKey + 1)
+        }
+        // Update inputValues with the logged set data
+        handleInputChange(workoutExercise.id, setNumber, 'repetitions', reps)
+        handleInputChange(workoutExercise.id, setNumber, 'weight', weight)
+        handleInputChange(workoutExercise.id, setNumber, 'rpe', rpe)
+      }
     }
   }
 
-  const toggleLock = () => {
-    setIsLocked(!isLocked)
+  const handleTimerEnd = () => {
+    setStartTimer(false)
   }
 
   return (
-    <TableRow>
-      <TableCell>{setNumber}</TableCell>
-      <TableCell>
-        <div className="flex items-center space-x-2">
+    <TableRow
+      className={`flex flex-col sm:table-row ${
+        isLocked ? 'border-2 border-emerald-500' : ''
+      }`}
+    >
+      <TableCell className="w-full sm:w-auto">{setNumber}</TableCell>
+      <TableCell className="w-full sm:w-auto">
+        <div className="flex flex-col items-start space-y-2 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0">
           <Input
             type="number"
-            placeholder="0"
+            placeholder={
+              isLocked
+                ? ''
+                : recommendedData?.reps
+                  ? `${recommendedData.reps}`
+                  : ''
+            }
             min={workoutExercise.min_reps}
             max={workoutExercise.max_reps}
             value={
-              isLocked && loggedSetData
-                ? loggedSetData.reps_completed || ''
+              isLocked
+                ? loggedSetData?.reps_completed || ''
                 : inputValues[
                     `${workoutExercise.id}-${setNumber}-repetitions`
                   ] || ''
@@ -98,12 +152,14 @@ const ExerciseTableRow = ({
               )
             }
             disabled={isLocked}
+            className="w-full sm:w-auto"
           />
           <PreviousWorkoutsDisplay
             workoutExerciseId={workoutExercise.id}
             setNumber={setNumber}
             userId={currentWorkoutSession.user_id}
             field="reps"
+            excludeWorkoutSessionId={currentWorkoutSession.id}
           />
         </div>
         <RecommendedWeightRepsRPEDisplay
@@ -113,14 +169,20 @@ const ExerciseTableRow = ({
           field="reps"
         />
       </TableCell>
-      <TableCell>
-        <div className="flex items-center space-x-2">
+      <TableCell className="w-full sm:w-auto">
+        <div className="flex flex-col items-start space-y-2 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0">
           <Input
             type="number"
-            placeholder="0"
+            placeholder={
+              isLocked
+                ? ''
+                : recommendedData?.weight
+                  ? `${recommendedData.weight}`
+                  : ''
+            }
             value={
-              isLocked && loggedSetData
-                ? loggedSetData.weight_completed || ''
+              isLocked
+                ? loggedSetData?.weight_completed || ''
                 : inputValues[`${workoutExercise.id}-${setNumber}-weight`] || ''
             }
             onChange={(e) =>
@@ -132,12 +194,14 @@ const ExerciseTableRow = ({
               )
             }
             disabled={isLocked}
+            className="w-full sm:w-auto"
           />
           <PreviousWorkoutsDisplay
             workoutExerciseId={workoutExercise.id}
             setNumber={setNumber}
             userId={currentWorkoutSession.user_id}
             field="weight"
+            excludeWorkoutSessionId={currentWorkoutSession.id}
           />
         </div>
         <RecommendedWeightRepsRPEDisplay
@@ -147,16 +211,22 @@ const ExerciseTableRow = ({
           field="weight"
         />
       </TableCell>
-      <TableCell>
-        <div className="flex items-center space-x-2">
+      <TableCell className="w-full sm:w-auto">
+        <div className="flex flex-col items-start space-y-2 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0">
           <Input
             type="number"
-            placeholder="0"
+            placeholder={
+              isLocked
+                ? ''
+                : recommendedData?.rpe
+                  ? `${recommendedData.rpe}`
+                  : ''
+            }
             min={1}
             max={10}
             value={
-              isLocked && loggedSetData
-                ? loggedSetData.rpe || ''
+              isLocked
+                ? loggedSetData?.rpe || ''
                 : inputValues[`${workoutExercise.id}-${setNumber}-rpe`] || ''
             }
             onChange={(e) =>
@@ -168,12 +238,14 @@ const ExerciseTableRow = ({
               )
             }
             disabled={isLocked}
+            className="w-full sm:w-auto"
           />
           <PreviousWorkoutsDisplay
             workoutExerciseId={workoutExercise.id}
             setNumber={setNumber}
             userId={currentWorkoutSession.user_id}
             field="rpe"
+            excludeWorkoutSessionId={currentWorkoutSession.id}
           />
         </div>
         <RecommendedWeightRepsRPEDisplay
@@ -183,15 +255,24 @@ const ExerciseTableRow = ({
           field="rpe"
         />
       </TableCell>
-      <TableCell>
-        <Button onClick={logSet} disabled={isLocked || isLoading}>
-          {isLocked ? 'Logged' : 'Log Set'}
+      <TableCell className="w-full sm:w-auto">
+        <Button
+          onClick={toggleLockAndLogSet}
+          disabled={isLoading}
+          variant={isLocked ? 'secondary' : 'default'}
+          className="w-full sm:w-auto"
+        >
+          {isLocked ? <AiOutlineClose /> : <AiOutlineCheck />}
         </Button>
       </TableCell>
-      <TableCell>
-        <Button variant="ghost" onClick={toggleLock} disabled={isLoading}>
-          {isLocked ? <AiOutlineUnlock /> : <AiOutlineLock />}
-        </Button>
+      <TableCell className="w-full sm:w-auto">
+        {startTimer && (
+          <RestTimer
+            key={timerKey}
+            timeRemaining={workoutExercise.rest_timer_duration}
+            onTimerEnd={handleTimerEnd}
+          />
+        )}
       </TableCell>
     </TableRow>
   )

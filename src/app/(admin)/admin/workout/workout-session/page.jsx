@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import WorkoutSelector from './WorkoutSelector'
 import SessionExerciseList from './SessionExerciseList'
 import FinishWorkoutButton from './FinishWorkoutButton'
-import RestTimer from './RestTimer'
+import RestTimer from './_components/RestTimer'
 
 const WorkoutSession = () => {
   const [workouts, setWorkouts] = useState([])
@@ -217,10 +217,6 @@ const WorkoutSession = () => {
             />
             <div className="mt-8 flex items-center justify-between">
               <FinishWorkoutButton onFinishWorkout={finishWorkout} />
-              <RestTimer
-                timeRemaining={timeRemaining}
-                setTimeRemaining={setTimeRemaining}
-              />
             </div>
           </CardContent>
         </Card>

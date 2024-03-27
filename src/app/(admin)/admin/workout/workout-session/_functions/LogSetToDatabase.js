@@ -14,7 +14,6 @@ const logOrUpdateSetToDatabase = async ({
   toast,
 }) => {
   const supabase = createClient();
-
   try {
     const { data, error } = await supabase
       .from('workout_logs')
@@ -28,6 +27,7 @@ const logOrUpdateSetToDatabase = async ({
         weight_completed: weight,
         rpe,
         started_at: new Date().toISOString(),
+        completed_at: new Date().toISOString(), // Update the completed_at column
         workout_session_id: workoutSessionId,
       })
       .eq('workout_id', workoutId)
@@ -53,7 +53,6 @@ const logOrUpdateSetToDatabase = async ({
       description: 'The set has been successfully logged or updated.',
       variant: 'success',
     });
-
     return { data };
   } catch (error) {
     console.error('Error in logOrUpdateSetToDatabase:', error);
@@ -66,7 +65,6 @@ const logOrUpdateSetToDatabase = async ({
   }
 };
 
-
 const checkExistingLog = async ({
   workoutId,
   userId,
@@ -76,7 +74,6 @@ const checkExistingLog = async ({
   workoutSessionId,
 }) => {
   const supabase = createClient();
-
   const { data, error } = await supabase
     .from('workout_logs')
     .select('*')

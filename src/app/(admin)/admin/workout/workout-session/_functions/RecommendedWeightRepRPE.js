@@ -70,22 +70,22 @@ const getRecommendedWeightRepsRPE = async ({ workoutExerciseId, userId, setNumbe
     recommendedRPE = log.rpe;
 
     // Adjust RPE based on last performance
-    if (log.reps_completed >= workoutExercise.max_reps && log.rpe <= 5) {
-      // If reps completed were at or above the max and RPE was low,
+    if (log.reps_completed >= workoutExercise.max_reps && log.rpe <= 7) {
+      // If reps completed were at or above the max and RPE was 7 or lower,
       // increase the weight and reset reps to the minimum
       const increaseBy = workoutExercise.weight >= 50 ? 5 : 2.5; // Increase by 5 lbs for weights >= 50 lbs, else 2.5 lbs
       recommendedWeight = calculateNextWeight(log.weight_completed, increaseBy);
-      console.log('Recommended weight (max reps, low RPE):', recommendedWeight);
+      console.log('Recommended weight (max reps, RPE <= 7):', recommendedWeight);
       recommendedReps = workoutExercise.min_reps;
       recommendedRPE = 7; // Reset RPE to default
-    } else if (log.reps_completed === workoutExercise.min_reps && log.rpe >= 8) {
-      // If reps completed were equal to the minimum and RPE was high,
+    } else if (log.reps_completed === workoutExercise.min_reps && log.rpe >= 9) {
+      // If reps completed were equal to the minimum and RPE was 9 or higher,
       // decrease the weight to the nearest valid increment
       const decreasedWeight = log.weight_completed * 0.95;
       recommendedWeight = decreasedWeight >= 50
         ? Math.floor(decreasedWeight / 5) * 5
         : Math.floor(decreasedWeight / 2.5) * 2.5;
-      console.log('Recommended weight (min reps, high RPE):', recommendedWeight);
+      console.log('Recommended weight (min reps, RPE >= 9):', recommendedWeight);
       recommendedReps = log.reps_completed;
       recommendedRPE = log.rpe - 1; // Decrease RPE by 1
     } else if (

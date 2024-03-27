@@ -7,6 +7,7 @@ const PreviousWorkoutsDisplay = ({
   setNumber,
   userId,
   field,
+  excludeWorkoutSessionId,
 }) => {
   const [previousWorkoutData, setPreviousWorkoutData] = useState([])
 
@@ -16,15 +17,18 @@ const PreviousWorkoutsDisplay = ({
         workoutExerciseId,
         setNumber,
         userId,
+        excludeWorkoutSessionId,
       })
       setPreviousWorkoutData(data)
     }
+
     fetchPreviousWorkoutData()
-  }, [workoutExerciseId, setNumber, userId])
+  }, [workoutExerciseId, setNumber, userId, excludeWorkoutSessionId])
 
   if (previousWorkoutData.length === 0) return null
 
   const formattedData = previousWorkoutData
+    .filter((item) => item.workout_session_id !== excludeWorkoutSessionId) // Filter out current workout session logs
     .map((item) => {
       if (field === 'reps') {
         return item.reps_completed
@@ -37,6 +41,7 @@ const PreviousWorkoutsDisplay = ({
     })
     .filter((value) => value !== null)
     .slice(-2)
+
   const displayData = formattedData.join(' / ')
 
   return (

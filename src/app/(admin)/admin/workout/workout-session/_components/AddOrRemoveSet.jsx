@@ -96,7 +96,7 @@ const AddOrRemoveSet = ({
         variant="ghost"
         className="text-zinc-500 hover:text-zinc-700"
       >
-        <AiOutlineMinus className="h-4 w-4" />
+        <AiOutlineMinus className="h-2 w-2" />
       </Button>
       <Button
         onClick={addSet}
@@ -104,7 +104,7 @@ const AddOrRemoveSet = ({
         variant="ghost"
         className="text-zinc-500 hover:text-zinc-700"
       >
-        <AiOutlinePlus className="h-4 w-4" />
+        <AiOutlinePlus className="h-2 w-2" />
       </Button>
     </div>
   )
