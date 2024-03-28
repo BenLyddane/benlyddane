@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect } from 'react'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
@@ -27,8 +29,6 @@ const ExerciseTableRow = ({
   const [timerKey, setTimerKey] = useState(0)
   const [recommendedData, setRecommendedData] = useState(null)
   const [inputValues, setInputValues] = useState({})
-  const [rowKey, setRowKey] = useState(0)
-  const [emeraldBorderSet, setEmeraldBorderSet] = useState(null) // New state for emerald border
 
   useEffect(() => {
     const fetchLoggedSetData = async () => {
@@ -42,9 +42,7 @@ const ExerciseTableRow = ({
       })
       setLoggedSetData(loggedSet)
       setIsLocked(!!loggedSet)
-      setStartTimer(false)
 
-      // Update the input values if logged set data exists
       if (loggedSet) {
         setInputValues({
           [`${workoutExercise.id}-${setNumber}-repetitions`]:
@@ -54,7 +52,6 @@ const ExerciseTableRow = ({
           [`${workoutExercise.id}-${setNumber}-rpe`]: loggedSet.rpe.toString(),
         })
       } else {
-        // Reset input values if no logged set data exists
         setInputValues({})
       }
     }
@@ -88,11 +85,15 @@ const ExerciseTableRow = ({
     const rpe = inputValues[`${workoutExercise.id}-${setNumber}-rpe`]
 
     if (isLocked) {
-      // Allow unlocking the set if it's already logged
+      // Unlock the set
       setIsLocked(false)
-      setEmeraldBorderSet(null) // Remove emerald border when unlocking
-      setRowKey((prevKey) => prevKey + 1) // Force re-render when unlocking
+      toast({
+        title: 'Set Unlocked',
+        description: 'The set has been unlocked for editing.',
+        variant: 'info',
+      })
     } else {
+      // Check if all inputs are filled
       if (!reps || !weight || !rpe) {
         toast({
           title: 'Missing input',
@@ -103,6 +104,7 @@ const ExerciseTableRow = ({
         return
       }
 
+      // Log or update the set
       setIsLoading(true)
       const { error, loggedSet } = await logOrUpdateSetToDatabase({
         workoutId: currentWorkoutSession.workout_id,
@@ -117,9 +119,11 @@ const ExerciseTableRow = ({
         toast,
       })
       setIsLoading(false)
+
       if (!error) {
-        setIsLocked(true)
+        // Set logged successfully
         setLoggedSetData(loggedSet)
+        setIsLocked(true)
         setInputValues({
           [`${workoutExercise.id}-${setNumber}-repetitions`]:
             loggedSet.reps_completed.toString(),
@@ -127,9 +131,8 @@ const ExerciseTableRow = ({
             loggedSet.weight_completed.toString(),
           [`${workoutExercise.id}-${setNumber}-rpe`]: loggedSet.rpe.toString(),
         })
-        setEmeraldBorderSet(setNumber) // Set emerald border for this set
-        setRowKey((prevKey) => prevKey + 1) // Force re-render when logging a set
-        if (!loggedSetData) {
+
+        if (!startTimer) {
           setStartTimer(true)
           setTimerKey((prevKey) => prevKey + 1)
         }
@@ -141,13 +144,6 @@ const ExerciseTableRow = ({
     setStartTimer(false)
   }
 
-  const getInputPlaceholder = (field) => {
-    if (isLocked || (loggedSetData && !isLocked)) {
-      return ''
-    }
-    return recommendedData?.[field] ? `${recommendedData[field]}` : ''
-  }
-
   const handleInputValues = (id, setNumber, field, value) => {
     setInputValues((prevInputValues) => ({
       ...prevInputValues,
@@ -157,15 +153,12 @@ const ExerciseTableRow = ({
 
   const renderInputOrValue = (field) => {
     if (isLocked) {
-      // Render logged set value as static text
       return inputValues[`${workoutExercise.id}-${setNumber}-${field}`]
     }
 
-    // Render input field
     return (
       <Input
         type="number"
-        placeholder={getInputPlaceholder(field)}
         min={field === 'reps' ? workoutExercise.min_reps : null}
         max={
           field === 'reps'
@@ -189,12 +182,7 @@ const ExerciseTableRow = ({
   }
 
   return (
-    <TableRow
-      key={rowKey}
-      className={`flex flex-col sm:table-row ${
-        emeraldBorderSet === setNumber ? 'border-2 border-emerald-500' : ''
-      }`}
-    >
+    <TableRow className="flex flex-col sm:table-row">
       <TableCell className="w-full sm:w-auto">{setNumber}</TableCell>
       <TableCell className="w-full sm:w-auto">
         <div className="flex flex-col items-start space-y-2 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0">
