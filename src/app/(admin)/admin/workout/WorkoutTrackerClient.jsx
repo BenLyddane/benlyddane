@@ -1,256 +1,204 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-
+import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
+import ExerciseSearch from './ExerciseSearch'
+import { handleDeleteWorkout } from './HandleDeleteWorkout'
+import WorkoutSelector from './WorkoutSelector'
+import AddExercise from './AddExercise'
+import WorkoutExercisesList from './WorkoutExercisesList'
+import { useToast } from '@/components/ui/use-toast'
+import {
+  ToastClose,
+  ToastDescription,
+  ToastProvider,
+  ToastTitle,
+  ToastViewport,
+} from '@/components/ui/toast'
 
-const WorkoutTrackerClient = ({ exercises, workouts }) => {
-  const [selectedExerciseId, setSelectedExerciseId] = useState('')
-  const [exerciseSearch, setExerciseSearch] = useState('')
-  const [filteredExercises, setFilteredExercises] = useState([])
-  const [sets, setSets] = useState('')
-  const [reps, setReps] = useState('')
-  const [weight, setWeight] = useState('')
-  const [restTimerDuration, setRestTimerDuration] = useState('')
+const WorkoutTrackerClient = ({ exercises, workouts: initialWorkouts }) => {
+  const supabase = createClient()
+  const [user, setUser] = useState(null)
   const [newWorkoutName, setNewWorkoutName] = useState('')
   const [currentWorkout, setCurrentWorkout] = useState(null)
   const [workoutExercises, setWorkoutExercises] = useState([])
-  const [showExerciseDropdown, setShowExerciseDropdown] = useState(false)
+  const [workouts, setWorkouts] = useState(initialWorkouts)
+  const { toast } = useToast()
 
   useEffect(() => {
-    setFilteredExercises(exercises)
-  }, [exercises])
-
-  const handleSearchExercise = (query) => {
-    const filteredExercises = exercises.filter((exercise) =>
-      exercise.name.toLowerCase().includes(query.toLowerCase()),
-    )
-    setFilteredExercises(filteredExercises)
-  }
-
-  const handleAddExercise = async () => {
-    if (selectedExerciseId && sets && reps && weight && currentWorkout) {
-      const exercise = {
-        workout_id: currentWorkout.id,
-        exercise_id: selectedExerciseId,
-        sets,
-        reps,
-        weight,
-        rest_timer_duration: restTimerDuration,
-      }
-      setSelectedExerciseId('')
-      setSets('')
-      setReps('')
-      setWeight('')
-      setRestTimerDuration('')
-      const newExercise = await addExercise(exercise)
-      setWorkoutExercises([...workoutExercises, newExercise])
+    const fetchUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      setUser(user)
     }
-  }
+
+    fetchUser()
+  }, [])
+
+  useEffect(() => {
+    const fetchWorkoutExercises = async () => {
+      if (currentWorkout) {
+        const { data, error } = await supabase
+          .from('workout_exercises')
+          .select('*, exercise:exercises(*)')
+          .eq('workout_id', currentWorkout.id)
+          .order('order', { ascending: true })
+
+        if (error) {
+          console.error('Error fetching workout exercises:', error)
+        } else {
+          setWorkoutExercises(data)
+        }
+      }
+    }
+
+    fetchWorkoutExercises()
+  }, [currentWorkout])
 
   const handleCreateWorkout = async () => {
-    if (newWorkoutName) {
-      const user = supabase.auth.user()
+    if (newWorkoutName && user) {
+      const { data: insertData, error: insertError } = await supabase
+        .from('workouts')
+        .insert([
+          {
+            name: newWorkoutName,
+            user_id: user.id,
+          },
+        ])
+        .select('*')
+        .single()
 
-      if (user) {
-        const newWorkout = await createWorkout(newWorkoutName, user.id)
-        setNewWorkoutName('')
-        setCurrentWorkout(newWorkout)
-        setWorkoutExercises([])
+      if (insertError) {
+        console.error('Error creating workout:', insertError)
+        toast({
+          variant: 'destructive',
+          description: 'Failed to create workout. Please try again.',
+        })
       } else {
-        console.error('User not logged in')
+        // Fetch the updated list of workouts
+        const { data: workoutsData, error: workoutsError } = await supabase
+          .from('workouts')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        if (workoutsError) {
+          console.error('Error fetching workouts:', workoutsError)
+          toast({
+            variant: 'destructive',
+            description: 'Failed to fetch workouts. Please try again.',
+          })
+        } else {
+          // Workout created successfully
+          setNewWorkoutName('')
+          setCurrentWorkout(insertData)
+          setWorkoutExercises([])
+          setWorkouts(workoutsData)
+          toast({
+            description: 'Workout created successfully.',
+          })
+        }
       }
+    } else {
+      // Handle the case when user is null or workout name is empty
+      // ...
     }
   }
 
-  const handleDeleteExercise = async (exerciseId) => {
-    const success = await deleteExercise(exerciseId)
-    if (success) {
-      setWorkoutExercises(
-        workoutExercises.filter((exercise) => exercise.id !== exerciseId),
+  const handleUpdateWorkout = async (updatedWorkout) => {
+    const { error } = await supabase
+      .from('workouts')
+      .update(updatedWorkout)
+      .eq('id', updatedWorkout.id)
+
+    if (error) {
+      console.error('Error updating workout:', error)
+      toast({
+        variant: 'destructive',
+        title: <ToastTitle>Error</ToastTitle>,
+        description: (
+          <ToastDescription>Failed to update workout.</ToastDescription>
+        ),
+        action: <ToastClose />,
+      })
+    } else {
+      setCurrentWorkout(updatedWorkout)
+      setWorkouts(
+        workouts.map((w) => (w.id === updatedWorkout.id ? updatedWorkout : w)),
       )
+      toast({
+        title: <ToastTitle>Success</ToastTitle>,
+        description: (
+          <ToastDescription>Workout updated successfully.</ToastDescription>
+        ),
+        action: <ToastClose />,
+      })
     }
   }
 
   return (
-    <div className="container mx-auto max-w-6xl py-8">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Workout Tracker</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <Input
-                  type="text"
-                  value={newWorkoutName}
-                  onChange={(e) => setNewWorkoutName(e.target.value)}
-                  placeholder="New Workout Name"
-                />
-                <Button onClick={handleCreateWorkout}>Create Workout</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div>
-          <Link href="/admin/workout/workout-session">
-            <Button disabled={!currentWorkout || workoutExercises.length === 0}>
-              Start Workout
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>Select Workout</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select
-            value={currentWorkout?.id}
-            onValueChange={(id) =>
-              setCurrentWorkout(workouts.find((w) => w.id === id))
-            }
-            placeholder="Select a Workout"
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {workouts && workouts.length > 0 ? (
-                workouts.map((workout) => (
-                  <SelectItem key={workout.id} value={workout.id}>
-                    {workout.name}
-                  </SelectItem>
-                ))
-              ) : (
-                <div>No workouts available.</div>
-              )}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
-
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>Add Exercise</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-            <div className="relative">
-              <Input
-                type="text"
-                value={exerciseSearch}
-                onChange={(e) => {
-                  setExerciseSearch(e.target.value)
-                  handleSearchExercise(e.target.value)
-                }}
-                placeholder="Search exercises..."
-                onClick={() => setShowExerciseDropdown(!showExerciseDropdown)}
-              />
-              {showExerciseDropdown && (
-                <div className="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg dark:bg-gray-800">
-                  {filteredExercises.length > 0 ? (
-                    <ul className="py-1">
-                      {filteredExercises.map((exercise) => (
-                        <li
-                          key={exercise.id}
-                          className="cursor-pointer px-4 py-2 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-                          onClick={() => {
-                            setSelectedExerciseId(exercise.id)
-                            setExerciseSearch(exercise.name)
-                            setShowExerciseDropdown(false)
-                          }}
-                        >
-                          {exercise.name}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="px-4 py-2 text-gray-600 dark:text-gray-400">
-                      No exercises found.
-                    </div>
-                  )}
+    <ToastProvider>
+      <div className="container mx-auto max-w-6xl py-8">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Workout Tracker</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="text"
+                    value={newWorkoutName}
+                    onChange={(e) => setNewWorkoutName(e.target.value)}
+                    placeholder="New Workout Name"
+                    className="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <Button onClick={handleCreateWorkout}>Create Workout</Button>
                 </div>
-              )}
-            </div>
-            <Input
-              type="number"
-              value={sets}
-              onChange={(e) => setSets(e.target.value)}
-              placeholder="Sets"
-            />
-            <Input
-              type="number"
-              value={reps}
-              onChange={(e) => setReps(e.target.value)}
-              placeholder="Reps"
-            />
-            <Input
-              type="number"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              placeholder="Weight (lbs)"
-            />
-            <Input
-              type="number"
-              value={restTimerDuration}
-              onChange={(e) => setRestTimerDuration(e.target.value)}
-              placeholder="Rest Timer (seconds)"
-            />
+              </CardContent>
+            </Card>
           </div>
-          <div className="mt-4">
-            <Button onClick={handleAddExercise} disabled={!currentWorkout}>
-              Add Exercise
-            </Button>
+          <div>
+            <Link href="/admin/workout/workout-session">
+              <Button>Start Workout Session</Button>
+            </Link>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>Workout Exercises</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {workoutExercises.length > 0 ? (
-            <div>
-              <ul>
-                {workoutExercises.map((exercise) => (
-                  <li
-                    key={exercise.id}
-                    className="flex items-center justify-between"
-                  >
-                    <span>
-                      {exercise.name} - Sets: {exercise.sets}, Reps:{' '}
-                      {exercise.reps}, Weight: {exercise.weight} lbs, Rest
-                      Timer: {exercise.rest_timer_duration} seconds
-                    </span>
-                    <Button
-                      onClick={() => handleDeleteExercise(exercise.id)}
-                      variant="destructive"
-                    >
-                      Delete
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <p>No exercises added yet.</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+        <WorkoutSelector
+          workouts={workouts}
+          currentWorkout={currentWorkout}
+          setCurrentWorkout={(workout) => setCurrentWorkout(workout)}
+          handleDeleteWorkout={(workoutId) =>
+            handleDeleteWorkout(
+              workoutId,
+              setCurrentWorkout,
+              setWorkoutExercises,
+              setWorkouts,
+              workouts,
+              toast,
+            )
+          }
+          handleUpdateWorkout={handleUpdateWorkout}
+        />
+
+        <AddExercise
+          exercises={exercises}
+          currentWorkout={currentWorkout}
+          workoutExercises={workoutExercises}
+          setWorkoutExercises={setWorkoutExercises}
+        />
+
+        <WorkoutExercisesList
+          workoutExercises={workoutExercises}
+          setWorkoutExercises={setWorkoutExercises}
+        />
+      </div>
+      <ToastViewport />
+    </ToastProvider>
   )
 }
 
