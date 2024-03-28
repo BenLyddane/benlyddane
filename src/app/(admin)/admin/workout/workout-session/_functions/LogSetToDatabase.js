@@ -15,37 +15,69 @@ const logOrUpdateSetToDatabase = async ({
 }) => {
   const supabase = createClient();
   try {
-    const { data, error } = await supabase
-      .from('workout_logs')
-      .upsert({
+    // Check if the log already exists
+    const existingLog = await checkExistingLog({
+      workoutId,
+      userId,
+      exerciseId,
+      workoutExerciseId,
+      setNumber,
+      workoutSessionId,
+    });
+
+    if (existingLog) {
+      // If the log exists, update the existing row
+      const { error } = await supabase
+        .from('workout_logs')
+        .update({
+          reps_completed: reps,
+          weight_completed: weight,
+          rpe,
+          started_at: new Date().toISOString(),
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', existingLog.id)
+        .select();
+
+      if (error) {
+        console.error('Error updating existing log:', error);
+        toast({
+          title: 'Error',
+          description: `An error occurred while updating the existing log: ${error.message}. Please try again.`,
+          variant: 'destructive',
+        });
+        return { error };
+      }
+    } else {
+      // If the log doesn't exist, insert a new row
+      const insertData = {
         workout_id: workoutId,
         user_id: userId,
         exercise_id: exerciseId,
-        workout_exercise_id: workoutExerciseId,
         set_number: setNumber,
         reps_completed: reps,
         weight_completed: weight,
         rpe,
         started_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(), // Update the completed_at column
+        completed_at: new Date().toISOString(),
         workout_session_id: workoutSessionId,
-      })
-      .eq('workout_id', workoutId)
-      .eq('user_id', userId)
-      .eq('exercise_id', exerciseId)
-      .eq('workout_exercise_id', workoutExerciseId)
-      .eq('set_number', setNumber)
-      .eq('workout_session_id', workoutSessionId)
-      .select();
+        workout_exercise_id: workoutExerciseId,
+      };
 
-    if (error) {
-      console.error('Error logging or updating set:', error);
-      toast({
-        title: 'Error',
-        description: 'An error occurred while logging or updating the set. Please try again.',
-        variant: 'destructive',
-      });
-      return { error };
+      const { error } = await supabase
+        .from('workout_logs')
+        .insert([insertData])
+        .select();
+
+      if (error) {
+        console.error('Error inserting new log:', error);
+        toast({
+          title: 'Error',
+          description: `An error occurred while inserting a new log: ${error.message}. Please try again.`,
+          variant: 'destructive',
+        });
+        return { error };
+      }
     }
 
     toast({
@@ -53,18 +85,15 @@ const logOrUpdateSetToDatabase = async ({
       description: 'The set has been successfully logged or updated.',
       variant: 'success',
     });
-    return { data };
   } catch (error) {
     console.error('Error in logOrUpdateSetToDatabase:', error);
     toast({
       title: 'Error',
-      description: 'An unexpected error occurred. Please try again.',
+      description: `An unexpected error occurred: ${error.message}. Please try again.`,
       variant: 'destructive',
     });
-    return { error };
   }
 };
-
 const checkExistingLog = async ({
   workoutId,
   userId,

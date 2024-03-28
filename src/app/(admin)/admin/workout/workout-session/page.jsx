@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import WorkoutSelector from './WorkoutSelector'
 import SessionExerciseList from './SessionExerciseList'
 import FinishWorkoutButton from './FinishWorkoutButton'
+import RestTimer from './_components/RestTimer'
 
 const WorkoutSession = () => {
   const [workouts, setWorkouts] = useState([])
@@ -19,30 +20,6 @@ const WorkoutSession = () => {
   const { toast } = useToast()
 
   const supabase = createClient()
-
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      const { data: userData, error: userError } = await supabase.auth.getUser()
-      if (userError || !userData.user) {
-        console.error('User authentication error:', userError)
-        toast({ title: 'User not authenticated', variant: 'destructive' })
-        return
-      }
-
-      await fetchWorkouts(userData.user.id)
-      await fetchExercises(userData.user.id)
-      await fetchCurrentWorkoutSession(userData.user.id)
-    }
-
-    fetchInitialData()
-  }, [])
-
-  useEffect(() => {
-    if (selectedWorkoutId) {
-      fetchWorkoutExercises(selectedWorkoutId)
-      fetchPreviousWorkoutLogs(selectedWorkoutId)
-    }
-  }, [selectedWorkoutId, currentWorkoutSession])
 
   const fetchData = async (table, column, value, setState) => {
     const { data, error } = await supabase
@@ -62,61 +39,66 @@ const WorkoutSession = () => {
     }
   }
 
-  const fetchWorkouts = async (userId) => {
-    await fetchData('workouts', 'user_id', userId, setWorkouts)
-  }
-
-  const fetchExercises = async (userId) => {
-    await fetchData('exercises', 'user_id', userId, setExercises)
-  }
-
-  const fetchCurrentWorkoutSession = async (userId) => {
-    const { data: sessionData, error: sessionError } = await supabase
-      .from('workout_sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .is('completed_at', null)
-      .single()
-
-    if (sessionError) {
-      if (sessionError.code !== 'PGRST116') {
-        console.error('Error fetching current workout session:', sessionError)
-        toast({
-          title: 'Error fetching current workout session',
-          description: sessionError.message,
-          variant: 'destructive',
-        })
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      const { data: userData, error: userError } = await supabase.auth.getUser()
+      if (userError || !userData.user) {
+        console.error('User authentication error:', userError)
+        toast({ title: 'User not authenticated', variant: 'destructive' })
+        return
       }
-    } else {
-      setCurrentWorkoutSession(sessionData)
-      setSelectedWorkoutId(sessionData?.workout_id || null)
 
-      if (sessionData) {
-        toast({
-          title: 'Continuing Existing Workout Session',
-          variant: 'success',
-        })
+      await fetchData('workouts', 'user_id', userData.user.id, setWorkouts)
+      await fetchData('exercises', 'user_id', userData.user.id, setExercises)
+
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('workout_sessions')
+        .select('*')
+        .eq('user_id', userData.user.id)
+        .is('completed_at', null)
+        .single()
+
+      if (sessionError) {
+        if (sessionError.code !== 'PGRST116') {
+          console.error('Error fetching current workout session:', sessionError)
+          toast({
+            title: 'Error fetching current workout session',
+            description: sessionError.message,
+            variant: 'destructive',
+          })
+        }
+      } else {
+        setCurrentWorkoutSession(sessionData)
+        setSelectedWorkoutId(sessionData?.workout_id || null)
+
+        if (sessionData) {
+          toast({
+            title: 'Continuing Existing Workout Session',
+            variant: 'success',
+          })
+        }
       }
     }
-  }
 
-  const fetchWorkoutExercises = async (workoutId) => {
-    await fetchData(
-      'workout_exercises',
-      'workout_id',
-      workoutId,
-      setWorkoutExercises,
-    )
-  }
+    fetchInitialData()
+  }, [])
 
-  const fetchPreviousWorkoutLogs = async (workoutId) => {
-    await fetchData(
-      'workout_logs',
-      'workout_id',
-      workoutId,
-      setPreviousWorkoutLogs,
-    )
-  }
+  useEffect(() => {
+    if (selectedWorkoutId) {
+      fetchData(
+        'workout_exercises',
+        'workout_id',
+        selectedWorkoutId,
+        setWorkoutExercises,
+      )
+      fetchData(
+        'workout_logs',
+        'workout_id',
+        selectedWorkoutId,
+        setPreviousWorkoutLogs,
+      )
+    }
+  }, [selectedWorkoutId, currentWorkoutSession])
 
   const startOrContinueWorkout = async () => {
     const { data: userData, error: userError } = await supabase.auth.getUser()
@@ -197,8 +179,8 @@ const WorkoutSession = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold">Workout Session</h1>
+    <div className="container mx-auto max-w-6xl">
+      <h1 className="mb-4 text-3xl font-bold">Workout Session</h1>
       {!currentWorkoutSession && (
         <Card>
           <CardHeader>
@@ -233,7 +215,7 @@ const WorkoutSession = () => {
               setTimeRemaining={setTimeRemaining}
               updateWorkoutExercises={updateWorkoutExercises}
             />
-            <div className="mt-8 flex flex-col items-center justify-between sm:flex-row">
+            <div className="mt-8 flex items-center justify-between">
               <FinishWorkoutButton onFinishWorkout={finishWorkout} />
             </div>
           </CardContent>
