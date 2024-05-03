@@ -1,4 +1,3 @@
-'use server'
 import glob from 'fast-glob'
 
 async function importArticle(articleFilename) {
