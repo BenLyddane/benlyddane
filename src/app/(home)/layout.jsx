@@ -19,5 +19,11 @@ export const metadata = {
 }
 
 export default function HomeLayout({ children }) {
-  return <Layout>{children}</Layout>
+  return (
+    <Providers>
+      <div className="flex w-full">
+        <Layout>{children}</Layout>
+      </div>
+    </Providers>
+  )
 }
