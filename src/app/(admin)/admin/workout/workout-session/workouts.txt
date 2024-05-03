@@ -77,7 +77,7 @@ create table
     constraint workout_logs_workout_id_fkey foreign key (workout_id) references workouts (id) on delete cascade,
     constraint workout_logs_workout_session_id_fkey foreign key (workout_session_id) references workout_sessions (id)
   ) tablespace pg_default;
-write a component that creates a workout session using these tables. This is for a nextjs project that uses supabase and tailwind css. There are shad/cn components located in '@/components/ui/component-name
+ This is for a nextjs project that uses supabase and tailwind css. There are shad/cn components located in '@/components/ui/component-name
 
 the supabase clients for server components are located in '@/utils/supabase/server' and it's exported as createClient function
 
@@ -89,7 +89,7 @@ const user = supabase.auth.getUser()
 
 the supabase clients for client components are located in '@/utils/supabase/client' and it's exported as createClient as well, but can only be used in client components marked 'use client; at the top of the component. 
 
-shadcn components located in '@/components/ui/***copmonent name***'
+shadcn components located in '@/components/ui/***component name***'
 
 AccordionAlertAlert DialogAspect RatioAvatarBadgeBreadcrumbNewButtonCalendarCardCarouselCheckboxCollapsibleComboboxCommandContext MenuData TableDate PickerDialogDrawerDropdown MenuFormHover CardInputInput OTPNewLabelMenubarNavigation MenuPaginationPopoverProgressRadio GroupResizableScroll AreaSelectSeparatorSheetSkeletonSliderSonnerSwitchTableTabsTextareaToastToggleToggle GroupTooltip
 
