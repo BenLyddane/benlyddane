@@ -1,5 +1,6 @@
 
 import { updateSession } from '@/utils/supabase/middleware'
+import { eachHourOfInterval } from 'date-fns'
 
 export async function middleware(request) {
   return await updateSession(request)
@@ -16,4 +17,11 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
+  unstable_allowDynamic: [
+    // allows a single file
+    '/lib/utilities.js',
+    // use a glob to allow anything in the function-bind 3rd party module
+    '/node_modules/function-bind/**',
+  ],
+ 
 }
