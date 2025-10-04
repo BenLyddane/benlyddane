@@ -267,14 +267,12 @@ export default async function Home() {
           </h1>
           <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
             I&apos;m Ben Lyddane, a mechanical and software engineer, and COO at BuildVision.IO. 
-            I believe in working hard and that learning is power. We live in the most incredible 
-            time in history—the internet gives us the ability to learn almost anything and apply 
-            it to any domain we choose.
+            I love learning new things, and the internet makes it possible to learn almost anything 
+            and apply it across different fields.
           </p>
           <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
-            Becoming a multi-domain thinker is the key to success. I&apos;m based in Potomac, MD, 
-            where I continuously explore diverse fields from engineering and business to various 
-            personal interests, always focused on connecting ideas across disciplines.
+            I&apos;m based in Potomac, MD, where I explore diverse interests from engineering and 
+            business to personal pursuits, connecting ideas across disciplines.
           </p>
 
           <div className="flex gap-6 mt-6">
