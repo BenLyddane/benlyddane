@@ -11,6 +11,8 @@ import {
 } from '@/components/SocialIcons'
 import BethesdaRow from '@/images/BethesdaRow.png'
 import portfolioCartoon from '@/images/portfoliocartoon.png'
+import phiGamLogo from '@/images/logos/Phi_Gamma_Delta_Crest.png'
+import vtLogo from '@/images/logos/vtlogo.png'
 
 function SocialLink({ className, href, children, icon: Icon }) {
   return (
@@ -39,7 +41,7 @@ function MailIcon(props) {
 
 export const metadata = {
   title: 'About',
-  description: 'I’m Ben Lyddane. I live in Chevy Chase, MD where I create.',
+  description: "I'm Ben Lyddane. I live in Potomac, MD where I create.",
 }
 
 export default function About() {
@@ -58,85 +60,45 @@ export default function About() {
         </div>
         <div className="lg:order-first lg:row-span-2">
           <h1 className="text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
-            I’m Ben Lyddane. I live in Chevy Chase, MD where I{' '}
+            I'm Ben Lyddane. I live in Potomac, MD where I{' '}
             <span className="text-cyan-500">create.</span>
           </h1>
           <div className="mt-6 space-y-7 text-base text-zinc-600 dark:text-zinc-400">
-            {' '}
             <p>
-              {' '}
-              From a young age, I&apos;ve been driven by a passion for exploring
-              diverse disciplines. I grew up with CPA parents, Mary Kay and
-              Anthony, who instilled in me a love for learning. I was
-              continuously encouraged to pursue my interests. As a kid, I
-              immersed myself in the world of competitive gaming, traveling
-              across the country to compete in Halo 2 and 3 tournaments.
-              Alongside my gaming pursuits, I honed my skills on the high school
-              golf team, discovering the unique beauty of individual competition
-              and the thrill of personal achievement.{' '}
-            </p>{' '}
+              I grew up in Bethesda with my parents Mary Kay and Anthony, who encouraged
+              me to pursue my interests. As a kid, I competed in Halo 2 and 3 tournaments
+              across the country and played on my high school golf team.
+            </p>
             <p>
-              {' '}
-              I studied mechanical engineering at Virginia Tech, where I also
-              joined the Phi Gamma Delta fraternity. This experience not only
-              provided me with a strong foundation in engineering but also
-              taught me the transformative power of social connections and the
-              value of true friendship. I learned that the richness of life lies
-              in the relationships we forge with others, and that the support
-              and camaraderie of our peers can propel us to new heights.{' '}
-            </p>{' '}
+              I studied mechanical engineering at Virginia Tech, where I joined Phi Gamma Delta.
+              College taught me that strong relationships and friendships are essential—the people
+              around you can push you to achieve more than you thought possible.
+            </p>
             <p>
-              {' '}
-              After graduating, I embarked on a journey to align my passions
-              with my career aspirations. Driven by a desire to maximize my
-              potential, I searched for the most lucrative opportunities for
-              mechanical engineers and found myself on a sales track. Through
-              dedication and hard work, I excelled in the Daikin graduate
-              engineer training program, emerging as the valedictorian. This
-              early success set the stage for a remarkable career trajectory, as
-              I consistently achieved top sales performance in each organization
-              I&apos;ve worked with.{' '}
-            </p>{' '}
+              After graduation, I looked for the best opportunities in mechanical engineering and
+              ended up in sales. I graduated as valedictorian from Daikin&apos;s graduate engineer
+              training program and consistently achieved top sales performance at each company I
+              worked for.
+            </p>
             <p>
-              {' '}
-              Throughout my personal and professional journey, I&apos;ve been
-              blessed with the unwavering support and love of my brilliant and
-              beautiful wife, Natalie. Her background in art provides a unique
-              perspective that complements my own, enriching our lives together.
-              Natalie&apos;s presence serves as a constant reminder of what
-              truly matters, keeping me focused on the things that bring genuine
-              fulfillment and happiness.{' '}
-            </p>{' '}
+              My wife Natalie, who has a background in art, brings a different perspective that
+              complements my engineering mindset. She keeps me grounded and focused on what matters.
+            </p>
             <p>
-              {' '}
-              As an avid traveler and lifelong learner, I find joy in exploring
-              new places and expanding my knowledge across various domains. My
-              love for food, particularly Japanese and Chinese cuisines, adds
-              another dimension to my adventures. However, I&apos;ve come to
-              recognize the importance of focus and prioritization. Inspired by
-              Warren Buffet&apos;s wisdom, I&apos;m committed to streamlining my
-              goals, concentrating my efforts on the pursuits that hold the
-              greatest potential for personal growth and impact.{' '}
-            </p>{' '}
+              I love traveling, learning new things, and great food (especially Japanese and Chinese).
+              I&apos;ve learned to focus my energy on pursuits with the most potential for growth and
+              impact, inspired by Warren Buffett&apos;s approach to prioritization.
+            </p>
             <p>
-              {' '}
-              With an insatiable appetite for improvement and an unwavering
-              determination to extract the most out of life, I&apos;m always
-              eager to learn from others. If you have any insights, advice, or
-              experiences that you believe could help me along my journey, I
-              would be immensely grateful if you shared them with me.{' '}
-            </p>{' '}
+              I&apos;m always looking to learn from others. If you have insights or experiences that
+              could help me improve, I&apos;d appreciate hearing them.
+            </p>
             <p>
-              {' '}
-              Today, as the founder of SpecFrog, I harness my diverse
-              experiences and interdisciplinary expertise to create solutions
-              that bridge the gap between cutting-edge technology and the
-              profound needs of legacy businesses. By leveraging my background
-              in mechanical and software engineering, sales, and personal
-              development, I am dedicated to shaping a future where the
-              intersection of diverse disciplines yields valuable outcomes for
-              companies and people.{' '}
-            </p>{' '}
+              As of June 2024, I serve as the COO at BuildVision.IO, where I apply my experience in
+              mechanical and software engineering, sales, and product development to connect MEP
+              equipment purchasers with suppliers, making equipment procurement as easy as buying
+              anything else online.
+            </p>
           </div>
         </div>
         <div className="lg:pl-20">
@@ -156,11 +118,11 @@ export default function About() {
               LinkedIn
             </SocialLink>
             <SocialLink
-              href="mailto:Ben@specfrog.com"
+              href="mailto:ben@buildvision.io"
               icon={MailIcon}
               className="mt-8 border-t border-zinc-100 pt-8 dark:border-zinc-700/40"
             >
-              Ben@SpecFrog.com (work)
+              ben@buildvision.io (work)
             </SocialLink>
             <SocialLink
               href="mailto:Ben@planetaria.tech"
@@ -170,6 +132,19 @@ export default function About() {
               BenL1291@gmail.com (personal)
             </SocialLink>
           </ul>
+          <div className="mt-8 border-t border-zinc-100 pt-8 dark:border-zinc-700/40">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+              Education
+            </h3>
+            <div className="flex gap-6">
+              <div className="relative flex items-center justify-center w-12 h-12 rounded-full shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
+                <Image src={vtLogo} alt="Virginia Tech" className="w-8 h-8" />
+              </div>
+              <div className="relative flex items-center justify-center w-12 h-12 rounded-full shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
+                <Image src={phiGamLogo} alt="Phi Gamma Delta" className="w-8 h-8" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </Container>

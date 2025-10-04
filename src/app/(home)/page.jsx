@@ -17,7 +17,9 @@ import logoCritical from '@/images/logos/cs.jpg'
 import logoDaikin from '@/images/logos/Daikin.png'
 import logoFullstack from '@/images/logos/fullstackLogo.jpg'
 import logoSpecFrog from '@/images/logos/FrogLogoPic.png'
+import logoBuildVision from '@/images/logos/BuildVision-Logo.jpeg'
 import vtlogo from '@/images/logos/vtlogo.png'
+import phiGamLogo from '@/images/logos/Phi_Gamma_Delta_Crest.png'
 import image1 from '@/images/photos/image-1.png'
 import image2 from '@/images/photos/image-2.png'
 import image3 from '@/images/photos/image-3.png'
@@ -136,14 +138,21 @@ function Role({ role }) {
 function Resume() {
   let resume = [
     {
-      company: 'SpecFrog',
-      title: 'CEO',
-      logo: logoSpecFrog,
-      start: '2023',
+      company: 'BuildVision.IO',
+      title: 'COO',
+      logo: logoBuildVision,
+      start: '2024',
       end: {
         label: 'Present',
         dateTime: new Date().getFullYear().toString(),
       },
+    },
+    {
+      company: 'SpecFrog',
+      title: 'Founder',
+      logo: logoSpecFrog,
+      start: '2023',
+      end: '2024',
     },
     {
       company: 'Fullstack Academy',
@@ -184,6 +193,13 @@ function Resume() {
       company: 'Virginia Tech',
       title: 'Mechanical Engineering',
       logo: vtlogo,
+      start: '2010',
+      end: '2014',
+    },
+    {
+      company: 'Phi Gamma Delta',
+      title: 'Fraternity',
+      logo: phiGamLogo,
       start: '2010',
       end: '2014',
     },
@@ -246,24 +262,19 @@ export default async function Home() {
       <Container className="mt-9">
         <div className="max-w-2xl">
           <h1 className="text-2xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">
-            Founder, Engineer, Creator, and Lifelong{' '}
+            Engineer, COO, and Lifelong{' '}
             <span className="text-cyan-500">Learner</span>
           </h1>
           <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
-            I&apos;m Ben Lyddane, a mechanical and software engineer, and the
-            founder of SpecFrog. My enthusiasm lies in integrating diverse
-            disciplines, from music production and golf to weightlifting and
-            extensive reading. My literary interests span non-fiction, business,
-            psychology, with a selective engagement in fiction. Additionally, I
-            explore the realms of podcasting and comedy, enriching my
-            professional journey with varied experiences.
+            I&apos;m Ben Lyddane, a mechanical and software engineer, and COO at BuildVision.IO. 
+            I believe in working hard and that learning is power. We live in the most incredible 
+            time in history—the internet gives us the ability to learn almost anything and apply 
+            it to any domain we choose.
           </p>
           <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">
-            Originating from Bethesda, my recent return marks the culmination of
-            exploration along the east coast. These experiences have not only
-            broadened my perspective but also reinforced my belief in
-            interdisciplinary approaches. This philosophy shapes my aspirations,
-            driving both personal growth and professional excellence.
+            Becoming a multi-domain thinker is the key to success. I&apos;m based in Potomac, MD, 
+            where I continuously explore diverse fields from engineering and business to various 
+            personal interests, always focused on connecting ideas across disciplines.
           </p>
 
           <div className="flex gap-6 mt-6">

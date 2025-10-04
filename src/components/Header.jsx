@@ -133,32 +133,18 @@ const navItems = [
     href: '/work',
     label: 'Work',
   },
-  {
-    href: '/interests',
-    label: 'Interests',
-    subItems: [
-      { href: '/interests/coding', label: 'Coding' },
-      { href: '/interests/food', label: 'Food' },
-      { href: '/interests/gaming', label: 'Gaming' },
-      { href: '/interests/golf', label: 'Golf' },
-      { href: '/interests/learning', label: 'Learning' },
-      { href: '/interests/music', label: 'Music' },
-      { href: '/interests/reading', label: 'Reading' },
-      { href: '/interests/weight-lifting', label: 'Weight Lifting' },
-    ],
-  },
-
-  {
-    href: '/podcasts',
-    label: 'Podcasts',
-    subItems: [
-      {
-        href: 'https://www.11minuteconstruction.com',
-        label: '11 Minute Construction Podcast',
-      },
-      { href: 'https://www.thursdinner.com', label: 'Thursdinner' },
-    ],
-  },
+  // Podcasts - Archived as of October 2024
+  // {
+  //   href: '/podcasts',
+  //   label: 'Podcasts',
+  //   subItems: [
+  //     {
+  //       href: 'https://www.11minuteconstruction.com',
+  //       label: '11 Minute Construction Podcast',
+  //     },
+  //     { href: 'https://www.thursdinner.com', label: 'Thursdinner' },
+  //   ],
+  // },
 ]
 function NavItem({ item, level = 0 }) {
   const [isOpen, setIsOpen] = useState(false)

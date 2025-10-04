@@ -28,7 +28,7 @@ export async function Footer() {
                 <div className="text-center text-sm text-zinc-400 sm:text-right dark:text-zinc-500">
                   <p>BenL1291@gmail.com</p>
                   <p>301-706-1181</p>
-                  <p>Chevy Chase, MD</p>
+                  <p>Potomac, MD</p>
                 </div>
                 <div className="text-sm text-zinc-400 dark:text-zinc-500">
                   <p>&copy; {new Date().getFullYear()} Ben Lyddane.</p>
