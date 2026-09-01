@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Coach</title>
+<style>
+  body { max-width: 42rem; margin: 3rem auto; padding: 0 1rem;
+         font: 16px/1.6 system-ui, sans-serif; color: #222; }
+  h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; margin-top: 2rem; }
+  code { background: #f4f4f4; padding: 0 .25em; }
+</style>
+</head>
+<body>
+
+<h1>Privacy Policy</h1>
+<p><em>Last updated: September 1, 2026</em></p>
+
+<p>Coach is a personal, single-user training and nutrition assistant operated
+by its sole user. It is not a commercial product, has no customer accounts,
+and does not serve the public. This policy describes what data the
+application handles and how, including its use of Google user data.</p>
+
+<h2>What the application does</h2>
+<p>Coach reads workout history from Hevy, plans training and nutrition, and
+communicates with its one user by email. It integrates with Google Calendar
+to place planned training sessions on the user's calendar and to read the
+day's agenda when composing briefings.</p>
+
+<h2>Google user data</h2>
+<p>The application requests two Google OAuth scopes:</p>
+<ul>
+  <li><code>calendar.events</code> — used to create, update, and delete
+  calendar events that the application itself created (training sessions).
+  Events are tagged with a private extended property, and the application
+  only modifies or deletes events carrying that tag. It never alters events
+  created by anything else.</li>
+  <li><code>calendar.readonly</code> — used to list the user's calendars and
+  read upcoming events so that daily briefings reflect the real schedule.</li>
+</ul>
+<p>Calendar data is read at the moment a briefing or scheduling job runs and
+is used only to compose that output. Event titles and times from the user's
+calendar may be included in emails sent to the user and may be passed to an
+AI model (Anthropic's API) solely to compose those emails. Calendar data is
+not used for advertising, is not sold, and is not shared with any third
+party beyond the service providers listed below, and never for their own
+purposes.</p>
+<p>The application's use of information received from Google APIs adheres to
+the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google
+API Services User Data Policy</a>, including the Limited Use requirements.</p>
+
+<h2>Other data</h2>
+<p>The application stores the user's own training, nutrition, and health log
+in a private database (Turso). Inbound email from the user is archived so it
+can be processed reliably. All of this data belongs to and describes the one
+user who operates the application.</p>
+
+<h2>Service providers</h2>
+<p>The application runs on Vercel (hosting), stores data in Turso (database),
+sends and receives email via Resend, and composes text via the Anthropic
+API. Data passes through these providers only as needed to operate the
+application.</p>
+
+<h2>Retention and deletion</h2>
+<p>The Google OAuth refresh token is stored in the application's private
+configuration. Access can be revoked at any time at
+<a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>,
+which immediately ends the application's ability to read or write calendar
+data. To request deletion of any stored data, contact the operator at the
+address below.</p>
+
+<h2>Contact</h2>
+<p>Questions about this policy: <a href="mailto:ben@buildvision.io">ben@buildvision.io</a>.</p>
+
+<p><a href="/coach.html">Coach</a> · <a href="/terms.html">Terms of Service</a></p>
+
+</body>
+</html>
