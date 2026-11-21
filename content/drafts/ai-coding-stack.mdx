@@ -1,0 +1,58 @@
+import { ArticleLayout } from '@/components/ArticleLayout'
+
+export const article = {
+  author: 'Ben Lyddane',
+  date: '2025-10-04',
+  title: 'My AI Development Stack',
+  description:
+    'The tools I use to build web apps with AI: Next.js, Cline, Shadcn, Supabase with MCP integration. How coding is changing.',
+  tags: ['Coding', 'AI', 'Learning'],
+}
+
+export const metadata = {
+  title: article.title,
+  description: article.description,
+}
+
+export default (props) => <ArticleLayout article={article} {...props} />
+
+My current development stack:
+
+**[Next.js](https://nextjs.org)** - React framework with file-based routing. Your folder structure is your URL structure.
+
+**[Vercel](https://vercel.com)** - Hosting and deployment. Push to GitHub, site goes live. Zero configuration.
+
+**[Cline](https://github.com/cline/cline)** - AI coding assistant in VS Code. Reads files, writes code, executes commands. Actually takes action instead of just suggesting.
+
+**[Shadcn/ui](https://ui.shadcn.com)** - Component library. Copy components into your project, no package dependencies. Built on Tailwind CSS.
+
+**[Supabase](https://supabase.com)** - Backend as a service. Handles auth, database, storage, real-time subscriptions.
+
+**MCP Integration** - Model Context Protocol lets the AI assistant directly query and manipulate the Supabase database through natural language. Skip writing SQL manually.
+
+This stack lets me build quickly. Minimal configuration. Everything integrates by default. I built [Pascend.com](https://pascend.com) using it:
+
+<div className="relative w-full h-96 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 shadow-lg mt-8 mb-8">
+  <iframe
+    src="https://pascend.com"
+    className="w-full h-full"
+    title="Pascend.com"
+    sandbox="allow-scripts allow-same-origin"
+  />
+</div>
+
+But this is already becoming outdated. [Replit](https://replit.com) and similar platforms are changing what coding looks like. You describe what you want to build, the AI builds it, you deploy it. No setup, no local environment, no framework decisions.
+
+Peter Diamandis interviewed Replit's CEO about this shift on the [Moonshots podcast](https://www.youtube.com/watch?v=T9rukIoXxgw&t=949s). The conversation explains what's coming better than I can. Watch it if you want to understand where software development is heading.
+
+<div className="relative w-full mb-8" style={{ paddingBottom: '56.25%' }}>
+  <iframe
+    className="absolute top-0 left-0 w-full h-full rounded-lg"
+    src="https://www.youtube.com/embed/T9rukIoXxgw?start=949"
+    title="Peter Diamandis Moonshots Podcast - Replit CEO"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+  />
+</div>
+
+Coding is becoming about knowing what to build, not how to build it. The tools handle the how. My stack works for now, but the gap between idea and deployed application keeps shrinking. That's the real story.

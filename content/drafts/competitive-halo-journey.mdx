@@ -1,0 +1,73 @@
+import { ArticleLayout } from '@/components/ArticleLayout'
+import Image from 'next/image'
+import haloRanking from '@/images/photos/haloranking.jpg'
+import battleCreek from '@/images/photos/1200px-Battle_CreekPC.jpg'
+import mlgEvent from '@/images/photos/IMG_1407.jpg'
+
+export const article = {
+  author: 'Ben Lyddane',
+  date: '2025-10-04',
+  title: 'From Basement Games to MLG: What Thousands of Hours of Halo Taught Me',
+  description:
+    'Spent years grinding Halo 2 and 3 ranked matches, competing at MLG events, and learning what it takes to improve at anything. Then college parties made walking away easy.',
+  tags: ['Gaming', 'Learning'],
+}
+
+export const metadata = {
+  title: article.title,
+  description: article.description,
+}
+
+export default (props) => <ArticleLayout article={article} {...props} />
+
+We'd sit in my friend's basement with cans of Coke, Cheez-Its, and boxes of Chips Ahoy cookies. Really embodied being a kid. Four TVs set up for system link, Halo running on all of them.
+
+His older brother and his friends would play with us. They were 16, we were 12. We got destroyed, but it felt normal at the time. They're older, they're better, that's just how it works, right?
+
+I didn't realize how much better they actually were until Halo 2 came out with online ranked matchmaking. One of the older brothers was rank 33 in Rumble Pit (Free for All). I couldn't get past 20. The ranking system used these shiny, deeper colors for higher ranks. I wanted those colors incredibly bad.
+
+<Image src={haloRanking} alt="Halo 2 ranking system" />
+
+That's when I realized it wasn't about age. It was just skill. And skill you could improve.
+
+My parents had no idea what was coming and how addicted and into gaming I was going to become. As long as grades were holding up, they were kind of okay with it? They mainly wanted me in bed on time. Eventually they started to justify it by realizing some of the cognitive benefits and focus benefits. There was also this convenient idea that because Master Chief was a robot fighting aliens instead of real people (like Call of Duty), it wouldn't lead to violence. I have no idea how true that is, but I was happy to agree as long as it meant I could keep playing.
+
+I would get home from school, do my homework in about 30 minutes, warmup on Halo for an hour, and play until I was told I couldn't anymore. Usually 5-6 hours, though I would have easily done 8 a day if they let me (or 12+ like these streamers nowadays if I could have just left school!)
+
+There was something so satisfying about hitting a headshot in Halo 2. There's this specific moment when aiming clicks. When you stop trying to "point" at heads and start trying to "swipe" past them, timing the trigger pull at the exact moment your reticle crosses their head.
+
+<Image src={battleCreek} alt="Battle Creek map" />
+
+I would have dreams about doing this and jumping off of the top of Battle Creek. That mid-air swipe headshot. But there's no moment of getting good. You're never good compared to the pros and the best. There is only constant slight improvement. That became the whole thing.
+
+When Halo 3 came around I was better and better. Got to 50 in most playlists, and something like 3000 games on my 50 in MLG playlist. But there wasn't a great way to distinguish skill at that level. If there had been true MMR in Halo 3, I bet I would have been in the top 200-ish people. Everyone "pretty good" was a 50, and there were thousands of 50s. Looking back I REALLY wish we had those individual ranks instead of the 50 system because it wasn't granular enough.
+
+The other frustration was team practice. I always wanted to practice as a team, but it was hard with 16-year-olds' different schedules. Individual skill only gets you so far.
+
+MLG events were wild. The people good at gaming weren't as weird as you would expect. Most of them needed to be relatively normal to be able to build teams and manage social expectations. The social grind of getting people to like you enough to want to play with you for a long period of time is honestly more than half the battle from an individual skill standpoint.
+
+We went to one Halo tournament at the Gaylord Hotel in Orlando, Florida. There was a cheerleading convention next door, but honestly I didn't really notice! You're playing games 16+ hours a day practicing, scrimming, the real matches, etc.
+
+<Image src={mlgEvent} alt="MLG Halo event" />
+
+The top 8 teams were considerably better than 8-32. It was the difference between full-time commitment and part-time. If you're not putting in the hours, you're not going to be the best. We always wanted even more skill gap. Certain game design decisions made Halo 3 a little less competitive from an individual skill standpoint than Halo 2 (like no combos, BXR, double shot, etc.). Movement was slower, clunkier. More skill gap would have helped the best individual players considerably, but Halo 3 was much more of a "team" game.
+
+I don't care how good you are - if it's 2 vs 1 in a fight you're almost always going to lose at the highest level. Positioning to get your own 2 on 1 and controlling weapons is the majority of the strategy. Everyone's shot was really top-notch at the top level.
+
+I didn't really walk away - I naturally grew up and went to school. Once you go to a few college parties, it's pretty easy to leave video gaming behind. Becoming a more social person was the best thing I could have ever done, and it's helped me immeasurably more than being good at video games did. Although there are tons of positive aspects from learning how to compete at anything at the highest level and the type of dedication it takes to do it.
+
+I definitely miss it, but I know I can't compete. I've been searching for fun games in the same way since then, but it's been hard to find ones that scratch the itch. None really do. Nowadays I need to be able to pause a game if I get a phone call or my wife needs something. There is no such thing as 6 hours uninterrupted, and I wouldn't really want there to be anyways! The ranking systems now are better. True MMR exists. But that window passed. I'm not putting in another 10,000 hours to get good at a new game.
+
+The approach from Halo works for everything else too. You find people better than you. You figure out what they're doing differently. You practice that specific thing. You measure if you're getting better. Repeat. I do this in engineering. In sales. When learning anything new. The patterns are the same whether it's Halo headshots or closing deals. Gaming just happened to be where I learned it first.
+
+This is what we thought was incredible in 2007:
+
+<div className="relative w-full mb-8" style={{ paddingBottom: '56.25%' }}>
+  <iframe
+    className="absolute top-0 left-0 w-full h-full rounded-lg"
+    src="https://www.youtube.com/embed/82K006C6uhw"
+    title="Halo Montage"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+  />
+</div>
