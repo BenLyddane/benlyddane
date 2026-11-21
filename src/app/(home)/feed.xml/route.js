@@ -3,7 +3,7 @@ import * as cheerio from 'cheerio'
 import { Feed } from 'feed'
 
 export async function GET(req) {
-  let siteUrl = process.env.PRODUCTION_URL
+  let siteUrl = process.env.PRODUCTION_URL || 'https://benlyddane.vercel.app'
 
   if (!siteUrl) {
     throw Error('Missing PRODUCTION_URL environment variable')
@@ -16,7 +16,8 @@ export async function GET(req) {
 
   let feed = new Feed({
     title: author.name,
-    description: 'Your blog description',
+    description:
+      'Ben Lyddane on engineering, software, cooking, travel, and life outside work.',
     author,
     id: siteUrl,
     link: siteUrl,

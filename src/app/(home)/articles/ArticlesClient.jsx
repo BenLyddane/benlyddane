@@ -1,80 +1,76 @@
 'use client'
 
 import { useState } from 'react'
-import { Card } from '@/components/Card'
-import { SimpleLayout } from '@/components/SimpleLayout'
+import Link from 'next/link'
+import { Container } from '@/components/Container'
 import { formatDate } from '@/lib/formatDate'
 
-function Article({ article }) {
-  return (
-    <article className="md:grid md:grid-cols-4 md:items-baseline">
-      <Card className="md:col-span-3">
-        <Card.Title href={`/articles/${article.slug}`}>
-          {article.title}
-        </Card.Title>
-        <Card.Eyebrow
-          as="time"
-          dateTime={article.date}
-          className="md:hidden"
-          decorate
-        >
-          {formatDate(article.date)}
-        </Card.Eyebrow>
-        <Card.Description>{article.description}</Card.Description>
-        <Card.Cta>Read article</Card.Cta>
-      </Card>
-      <Card.Eyebrow
-        as="time"
-        dateTime={article.date}
-        className="hidden mt-1 md:block"
-      >
-        {formatDate(article.date)}
-      </Card.Eyebrow>
-    </article>
-  )
-}
-
 export default function ArticlesClient({ articles }) {
-  const [selectedTag, setSelectedTag] = useState('All')
-  
-  // Get all unique tags
-  const allTags = ['All', ...new Set(articles.flatMap(article => article.tags || []))]
-  
-  // Filter articles based on selected tag
-  const filteredArticles = selectedTag === 'All' 
-    ? articles 
-    : articles.filter(article => article.tags?.includes(selectedTag))
+  const [selectedTopic, setSelectedTopic] = useState('All')
+  const topics = [
+    'All',
+    ...new Set(articles.map((article) => article.tags?.[0]).filter(Boolean)),
+  ]
+  const visibleArticles =
+    selectedTopic === 'All'
+      ? articles
+      : articles.filter((article) => article.tags?.includes(selectedTopic))
 
   return (
-    <SimpleLayout
-      title="Writing on my work and interests."
-      intro="Long form thoughts and ideas."
-    >
-      <div className="mb-8 flex items-center gap-3">
-        <label htmlFor="tag-filter" className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-          Filter by:
-        </label>
-        <select
-          id="tag-filter"
-          value={selectedTag}
-          onChange={(e) => setSelectedTag(e.target.value)}
-          className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition hover:border-cyan-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-        >
-          {allTags.map((tag) => (
-            <option key={tag} value={tag}>
-              {tag}
-            </option>
-          ))}
-        </select>
+    <Container className="portfolio-page">
+      <header>
+        <p className="page-kicker">Writing</p>
+        <h1 className="page-title">Things I’ve spent time on.</h1>
+        <p className="page-intro">
+          Building software, making noodles, playing Halo, and getting out of
+          town. Notes from work and the rest of life.
+        </p>
+      </header>
+
+      <div
+        className="topic-filters"
+        role="group"
+        aria-label="Filter writing by topic"
+      >
+        {topics.map((topic) => (
+          <button
+            key={topic}
+            type="button"
+            className="topic-button"
+            aria-pressed={selectedTopic === topic}
+            aria-controls="writing-results"
+            onClick={() => setSelectedTopic(topic)}
+          >
+            {topic}
+          </button>
+        ))}
       </div>
-      
-      <div className="md:border-l md:border-zinc-100 md:pl-6 md:dark:border-zinc-700/40">
-        <div className="flex flex-col max-w-3xl space-y-16">
-          {filteredArticles.map((article) => (
-            <Article key={article.slug} article={article} />
-          ))}
-        </div>
+      <p className="sr-only" role="status">
+        {visibleArticles.length}{' '}
+        {visibleArticles.length === 1 ? 'article' : 'articles'}
+        {selectedTopic === 'All' ? '' : ` about ${selectedTopic.toLowerCase()}`}
+      </p>
+
+      <div id="writing-results" className="writing-list">
+        {visibleArticles.map((article) => (
+          <article key={article.slug} className="writing-item">
+            <time dateTime={article.date} className="writing-date">
+              {formatDate(article.date)}
+            </time>
+            <div>
+              <h2 className="writing-title">
+                <Link href={`/articles/${article.slug}`}>{article.title}</Link>
+              </h2>
+              <p className="writing-description">{article.description}</p>
+            </div>
+          </article>
+        ))}
+        {visibleArticles.length === 0 && (
+          <p className="writing-description">
+            No articles in this topic yet. Choose All to see the archive.
+          </p>
+        )}
       </div>
-    </SimpleLayout>
+    </Container>
   )
 }
