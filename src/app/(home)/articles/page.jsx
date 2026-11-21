@@ -1,14 +1,17 @@
-import { getAllArticles } from '@/lib/articles'
-import ArticlesClient from './ArticlesClient'
+import { Container } from '@/components/Container'
 
 export const metadata = {
   title: 'Writing',
-  description:
-    'Notes by Ben Lyddane on software, construction, cooking, gaming, and travel.',
+  description: 'No articles published.',
 }
 
-export default async function ArticlesIndex() {
-  const articles = await getAllArticles()
-
-  return <ArticlesClient articles={articles} />
+export default function ArticlesIndex() {
+  return (
+    <Container className="portfolio-page">
+      <header>
+        <p className="page-kicker">Writing</p>
+        <h1 className="page-title">No articles published.</h1>
+      </header>
+    </Container>
+  )
 }

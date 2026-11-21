@@ -6,15 +6,10 @@ import { Toaster } from '@/components/ui/toaster'
 export const metadata = {
   title: {
     template: '%s · Ben Lyddane',
-    default: 'Ben Lyddane · Engineering, software & life outside work',
+    default: 'Ben Lyddane · Mechanical engineering & software',
   },
   description:
-    'Mechanical and software engineer, COO at BuildVision, and based in Potomac, Maryland. Work, writing, and a few things I’m learning along the way.',
-  alternates: {
-    types: {
-      'application/rss+xml': `${process.env.PRODUCTION_URL || 'https://benlyddane.vercel.app'}/feed.xml`,
-    },
-  },
+    'Mechanical and software engineer applying AI to HVAC equipment workflows. COO at BuildVision, based in Potomac, Maryland.',
 }
 
 export default function RootLayout({ children }) {

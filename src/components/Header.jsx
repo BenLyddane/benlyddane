@@ -9,7 +9,6 @@ import { Container } from '@/components/Container'
 
 const navigation = [
   { href: '/work', label: 'Work' },
-  { href: '/articles', label: 'Writing' },
   { href: '/about', label: 'About' },
 ]
 

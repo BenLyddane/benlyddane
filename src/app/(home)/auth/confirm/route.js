@@ -1,11 +1,10 @@
-
-
+import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const token_hash = searchParams.get('token_hash')
-  const type = searchParams.get('type') 
+  const type = searchParams.get('type')
   const next = searchParams.get('next') ?? '/'
 
   const redirectTo = request.nextUrl.clone()
@@ -27,6 +26,6 @@ export async function GET(request) {
   }
 
   // return the user to an error page with some instructions
-  redirectTo.pathname = '/error'
+  redirectTo.pathname = '/auth/error'
   return NextResponse.redirect(redirectTo)
 }

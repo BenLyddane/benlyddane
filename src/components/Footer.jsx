@@ -12,7 +12,7 @@ export async function Footer() {
       <Container>
         <div className="footer-top">
           <div>
-            <p className="footer-heading">Say hello.</p>
+            <p className="footer-heading">Contact</p>
             <a className="text-link" href="mailto:BenL1291@gmail.com">
               BenL1291@gmail.com
             </a>
@@ -20,7 +20,6 @@ export async function Footer() {
           <nav aria-label="Elsewhere" className="footer-links">
             <a href="https://github.com/BenLyddane">GitHub</a>
             <a href="https://www.linkedin.com/in/benlyddane">LinkedIn</a>
-            <Link href="/feed.xml">RSS</Link>
           </nav>
         </div>
         <div className="footer-bottom">
